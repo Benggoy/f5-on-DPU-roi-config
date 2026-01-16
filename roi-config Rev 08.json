@@ -1,19 +1,22 @@
 {
-  "version": "2.2.0",
-  "lastUpdated": "2026-01-13T20:00:00Z",
+  "version": "2.7.0",
+  "lastUpdated": "2026-01-16T14:00:00Z",
   "configSource": "github",
 
   "gpuTypes": {
+    "RTX-6000-Ada": { "name": "RTX 6000 Ada", "memory_gb": 48, "bandwidth_tbps": 0.96, "tdp_watts": 300, "generation": "Ada Lovelace", "available": true, "release_year": 2023, "hourly_cost": 1.2, "usable_memory_gb": 45, "cuda_cores": 18176, "tensor_cores": 568, "rt_cores": 142, "boost_clock_mhz": 2505, "msrp_usd": 6800, "pcie_gen": 4, "memory_type": "GDDR6-ECC", "memory_interface_bits": 384, "fp32_tflops": 91.1, "category": "workstation" },
     "H100": { "name": "H100", "memory_gb": 80, "bandwidth_tbps": 3.35, "tdp_watts": 700, "generation": "Hopper", "available": true, "release_year": 2022, "hourly_cost": 3.5, "usable_memory_gb": 70 },
     "H200": { "name": "H200", "memory_gb": 141, "bandwidth_tbps": 4.8, "tdp_watts": 700, "generation": "Hopper", "available": true, "release_year": 2024, "hourly_cost": 4.5, "usable_memory_gb": 130 },
     "B200": { "name": "B200", "memory_gb": 192, "bandwidth_tbps": 8.0, "tdp_watts": 1000, "generation": "Blackwell", "available": true, "release_year": 2024, "hourly_cost": 6.0, "usable_memory_gb": 175 },
     "GB200": { "name": "GB200", "memory_gb": 384, "bandwidth_tbps": 16.0, "tdp_watts": 2700, "generation": "Blackwell", "available": true, "release_year": 2025, "hourly_cost": 7.0, "usable_memory_gb": 350 },
     "R200": { "name": "R200", "memory_gb": 288, "bandwidth_tbps": 22.0, "tdp_watts": 1800, "generation": "Vera Rubin", "available": false, "speculative": true, "release_year": 2027, "hourly_cost": 8.0, "usable_memory_gb": 265 },
     "R200-Ultra": { "name": "R200-Ultra", "memory_gb": 1024, "bandwidth_tbps": 28.0, "tdp_watts": 2200, "generation": "Vera Rubin", "available": false, "speculative": true, "release_year": 2027, "hourly_cost": 12.0, "usable_memory_gb": 950 },
-    "R300": { "name": "R300", "memory_gb": 512, "bandwidth_tbps": 40.0, "tdp_watts": 2000, "generation": "Vera Rubin Next", "available": false, "speculative": true, "release_year": 2028, "hourly_cost": 15.0, "usable_memory_gb": 470 }
+    "R300": { "name": "R300", "memory_gb": 512, "bandwidth_tbps": 40.0, "tdp_watts": 2000, "generation": "Vera Rubin Next", "available": false, "speculative": true, "release_year": 2028, "hourly_cost": 15.0, "usable_memory_gb": 470 },
+    "R400": { "name": "R400", "memory_gb": 1024, "bandwidth_tbps": 60.0, "tdp_watts": 2500, "generation": "Post-Rubin", "available": false, "speculative": true, "release_year": 2029, "hourly_cost": 20.0, "usable_memory_gb": 950 }
   },
 
   "hardware": {
+    "RTX-6000-Ada": { "memory": 48, "powerW": 300, "cost": 6800, "mult": 0.75, "tflops": 91.1, "bandwidthTBs": 0.96, "arch": "Ada Lovelace", "tensorGen": 4, "cudaCores": 18176, "tensorCores": 568, "rtCores": 142, "boostClockMhz": 2505, "memoryInterface": 384, "memoryType": "GDDR6-ECC", "pcie": "4.0x16", "maxDisplays": 4, "nvencGen": 8, "nvdecGen": 5, "category": "workstation" },
     "V100-16": { "memory": 16, "powerW": 300, "cost": 8000, "mult": 0.35, "tflops": 125, "bandwidthTBs": 0.9, "arch": "Volta", "tensorGen": 1 },
     "V100-32": { "memory": 32, "powerW": 300, "cost": 12000, "mult": 0.4, "tflops": 125, "bandwidthTBs": 0.9, "arch": "Volta", "tensorGen": 1 },
     "L40": { "memory": 48, "powerW": 300, "cost": 50000, "mult": 0.8, "tflops": 90, "bandwidthTBs": 0.86, "arch": "Ada", "tensorGen": 4 },
@@ -30,7 +33,8 @@
     "GB300": { "memory": 288, "powerW": 1200, "cost": 150000, "mult": 3.75, "tflops": 1500, "bandwidthTBs": 16.0, "arch": "Grace-Blackwell", "tensorGen": 5 },
     "R200": { "memory": 288, "powerW": 1800, "cost": 200000, "mult": 5.0, "tflops": 2500, "bandwidthTBs": 22.0, "arch": "Rubin", "tensorGen": 6 },
     "R200-Ultra": { "memory": 1024, "powerW": 2200, "cost": 350000, "mult": 7.5, "tflops": 5000, "bandwidthTBs": 44.0, "arch": "Rubin-Ultra", "tensorGen": 6 },
-    "R300": { "memory": 512, "powerW": 2000, "cost": 400000, "mult": 10.0, "tflops": 6000, "bandwidthTBs": 40.0, "arch": "Rubin-Next", "tensorGen": 7 }
+    "R300": { "memory": 512, "powerW": 2000, "cost": 400000, "mult": 10.0, "tflops": 6000, "bandwidthTBs": 40.0, "arch": "Rubin-Next", "tensorGen": 7 },
+    "R400": { "memory": 1024, "powerW": 2500, "cost": 500000, "mult": 12.5, "tflops": 8000, "bandwidthTBs": 60.0, "arch": "Post-Rubin", "tensorGen": 8 }
   },
 
   "modelArchitectures": {
@@ -42,7 +46,8 @@
     "2T": { "name": "2T", "display_name": "2T (MoE, ~100B active)", "params_billions": 2000, "is_moe": true, "active_params_billions": 100, "category": "frontier", "speculative": true, "throughput_rpm": 2.0 },
     "5T": { "name": "5T", "display_name": "5T (MoE, ~200B active)", "params_billions": 5000, "is_moe": true, "active_params_billions": 200, "category": "frontier", "speculative": true, "throughput_rpm": 1.2 },
     "10T": { "name": "10T", "display_name": "10T (MoE, ~400B active)", "params_billions": 10000, "is_moe": true, "active_params_billions": 400, "category": "frontier", "speculative": true, "throughput_rpm": 0.8 },
-    "20T": { "name": "20T", "display_name": "20T (MoE, ~800B active)", "params_billions": 20000, "is_moe": true, "active_params_billions": 800, "category": "frontier", "speculative": true, "throughput_rpm": 0.5 }
+    "20T": { "name": "20T", "display_name": "20T (MoE, ~800B active)", "params_billions": 20000, "is_moe": true, "active_params_billions": 800, "category": "frontier", "speculative": true, "throughput_rpm": 0.5 },
+    "30T": { "name": "30T", "display_name": "30T (MoE, ~1.2T active)", "params_billions": 30000, "is_moe": true, "active_params_billions": 1200, "category": "frontier", "speculative": true, "throughput_rpm": 0.3 }
   },
 
   "modelMemoryRequirements": {
@@ -61,7 +66,8 @@
     "2T": 4800,
     "5T": 12000,
     "10T": 24000,
-    "20T": 48000
+    "20T": 48000,
+    "30T": 72000
   },
 
   "modelParameters": {
@@ -81,7 +87,8 @@
       "2T": { "tokPerSec": 40, "f5Factor": 3.50, "revFactor": 40.0 },
       "5T": { "tokPerSec": 25, "f5Factor": 4.00, "revFactor": 75.0 },
       "10T": { "tokPerSec": 15, "f5Factor": 4.50, "revFactor": 150.0 },
-      "20T": { "tokPerSec": 10, "f5Factor": 5.00, "revFactor": 300.0 }
+      "20T": { "tokPerSec": 10, "f5Factor": 5.00, "revFactor": 300.0 },
+      "30T": { "tokPerSec": 7, "f5Factor": 5.50, "revFactor": 450.0 }
     },
     "standard": {
       "1B": { "tokPerSec": 5000, "f5Factor": 0.22, "revFactor": 0.03 },
@@ -99,7 +106,8 @@
       "2T": { "tokPerSec": 40, "f5Factor": 2.80, "revFactor": 40.0 },
       "5T": { "tokPerSec": 25, "f5Factor": 3.20, "revFactor": 75.0 },
       "10T": { "tokPerSec": 15, "f5Factor": 3.60, "revFactor": 150.0 },
-      "20T": { "tokPerSec": 10, "f5Factor": 4.00, "revFactor": 300.0 }
+      "20T": { "tokPerSec": 10, "f5Factor": 4.00, "revFactor": 300.0 },
+      "30T": { "tokPerSec": 7, "f5Factor": 4.40, "revFactor": 450.0 }
     },
     "conservative": {
       "1B": { "tokPerSec": 5000, "f5Factor": 0.15, "revFactor": 0.03 },
@@ -117,19 +125,141 @@
       "2T": { "tokPerSec": 40, "f5Factor": 2.10, "revFactor": 40.0 },
       "5T": { "tokPerSec": 25, "f5Factor": 2.40, "revFactor": 75.0 },
       "10T": { "tokPerSec": 15, "f5Factor": 2.70, "revFactor": 150.0 },
-      "20T": { "tokPerSec": 10, "f5Factor": 3.00, "revFactor": 300.0 }
+      "20T": { "tokPerSec": 10, "f5Factor": 3.00, "revFactor": 300.0 },
+      "30T": { "tokPerSec": 7, "f5Factor": 3.30, "revFactor": 450.0 }
     }
   },
 
   "gpusPerReplica": {
-    "8B":   { "H100": 1,   "H200": 1,   "B200": 1,   "GB200": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1 },
-    "70B":  { "H100": 4,   "H200": 2,   "B200": 2,   "GB200": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1 },
-    "405B": { "H100": 16,  "H200": 8,   "B200": 6,   "GB200": 3,   "R200": 2,   "R200-Ultra": 1,  "R300": 1 },
-    "671B": { "H100": 24,  "H200": 12,  "B200": 8,   "GB200": 4,   "R200": 3,   "R200-Ultra": 1,  "R300": 2 },
-    "1T":   { "H100": 40,  "H200": 20,  "B200": 14,  "GB200": 7,   "R200": 5,   "R200-Ultra": 2,  "R300": 3 },
-    "2T":   { "H100": 72,  "H200": 36,  "B200": 24,  "GB200": 12,  "R200": 8,   "R200-Ultra": 3,  "R300": 5 },
-    "5T":   { "H100": 160, "H200": 80,  "B200": 54,  "GB200": 27,  "R200": 18,  "R200-Ultra": 6,  "R300": 12 },
-    "10T":  { "H100": 320, "H200": 160, "B200": 108, "GB200": 54,  "R200": 36,  "R200-Ultra": 12, "R300": 24 },
-    "20T":  { "H100": 640, "H200": 320, "B200": 216, "GB200": 108, "R200": 72,  "R200-Ultra": 24, "R300": 48 }
+    "8B":   { "RTX-6000-Ada": 1,   "H100": 1,    "H200": 1,   "B200": 1,   "GB200": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
+    "70B":  { "RTX-6000-Ada": 8,   "H100": 4,    "H200": 2,   "B200": 2,   "GB200": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
+    "405B": { "RTX-6000-Ada": 32,  "H100": 16,   "H200": 8,   "B200": 6,   "GB200": 3,   "R200": 2,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
+    "671B": { "RTX-6000-Ada": 48,  "H100": 24,   "H200": 12,  "B200": 8,   "GB200": 4,   "R200": 3,   "R200-Ultra": 1,  "R300": 2,  "R400": 1 },
+    "1T":   { "RTX-6000-Ada": 80,  "H100": 40,   "H200": 20,  "B200": 14,  "GB200": 7,   "R200": 5,   "R200-Ultra": 2,  "R300": 3,  "R400": 2 },
+    "2T":   { "RTX-6000-Ada": 144, "H100": 72,   "H200": 36,  "B200": 24,  "GB200": 12,  "R200": 8,   "R200-Ultra": 3,  "R300": 5,  "R400": 3 },
+    "5T":   { "RTX-6000-Ada": 320, "H100": 160,  "H200": 80,  "B200": 54,  "GB200": 27,  "R200": 18,  "R200-Ultra": 6,  "R300": 12, "R400": 8 },
+    "10T":  { "RTX-6000-Ada": 640, "H100": 320,  "H200": 160, "B200": 108, "GB200": 54,  "R200": 36,  "R200-Ultra": 12, "R300": 24, "R400": 12 },
+    "20T":  { "RTX-6000-Ada": 1280, "H100": 640,  "H200": 320, "B200": 216, "GB200": 108, "R200": 72,  "R200-Ultra": 24, "R300": 48, "R400": 24 },
+    "30T":  { "RTX-6000-Ada": 1920, "H100": 960,  "H200": 480, "B200": 324, "GB200": 162, "R200": 108, "R200-Ultra": 36, "R300": 72, "R400": 36 }
+  },
+
+  "gpuMatrixArchitectures": {
+    "1B":   { "params": 1e9,   "layers": 16,  "hidden": 2048,  "heads": 16,  "headDim": 128, "isMoE": false },
+    "3B":   { "params": 3e9,   "layers": 26,  "hidden": 2560,  "heads": 20,  "headDim": 128, "isMoE": false },
+    "7B":   { "params": 7e9,   "layers": 32,  "hidden": 4096,  "heads": 32,  "headDim": 128, "isMoE": false },
+    "8B":   { "params": 8e9,   "layers": 32,  "hidden": 4096,  "heads": 32,  "headDim": 128, "isMoE": false },
+    "13B":  { "params": 13e9,  "layers": 40,  "hidden": 5120,  "heads": 40,  "headDim": 128, "isMoE": false },
+    "32B":  { "params": 32e9,  "layers": 60,  "hidden": 6656,  "heads": 52,  "headDim": 128, "isMoE": false },
+    "70B":  { "params": 70e9,  "layers": 80,  "hidden": 8192,  "heads": 64,  "headDim": 128, "isMoE": false },
+    "72B":  { "params": 72e9,  "layers": 80,  "hidden": 8192,  "heads": 64,  "headDim": 128, "isMoE": false },
+    "175B": { "params": 175e9, "layers": 96,  "hidden": 12288, "heads": 96,  "headDim": 128, "isMoE": false },
+    "405B": { "params": 405e9, "layers": 126, "hidden": 16384, "heads": 128, "headDim": 128, "isMoE": false },
+    "671B": { "params": 671e9, "layers": 61,  "hidden": 7168,  "heads": 128, "headDim": 128, "isMoE": true, "activeParams": 37e9 },
+    "1T":   { "params": 1e12,  "layers": 80,  "hidden": 16384, "heads": 128, "headDim": 128, "isMoE": true, "activeParams": 50e9 },
+    "2T":   { "params": 2e12,  "layers": 96,  "hidden": 18432, "heads": 144, "headDim": 128, "isMoE": true, "activeParams": 80e9 },
+    "5T":   { "params": 5e12,  "layers": 120, "hidden": 24576, "heads": 192, "headDim": 128, "isMoE": true, "activeParams": 150e9 },
+    "10T":  { "params": 10e12, "layers": 160, "hidden": 32768, "heads": 256, "headDim": 128, "isMoE": true, "activeParams": 300e9 },
+    "20T":  { "params": 20e12, "layers": 200, "hidden": 40960, "heads": 320, "headDim": 128, "isMoE": true, "activeParams": 600e9 },
+    "30T":  { "params": 30e12, "layers": 240, "hidden": 49152, "heads": 384, "headDim": 128, "isMoE": true, "activeParams": 1000e9 }
+  },
+
+  "gpuUsableMemory": {
+    "RTX-6000-Ada": 42,
+    "A100-40": 34,
+    "A100-80": 68,
+    "H100": 68,
+    "H200": 120,
+    "B100": 163,
+    "B200": 163,
+    "GB200": 326,
+    "R200": 245,
+    "R200-Ultra": 870,
+    "R300": 435,
+    "R400": 870
+  },
+
+  "kvCachePresets": {
+    "chatbot": {
+      "hitRate": 60,
+      "prefix": 25,
+      "semantic": 15,
+      "multiturn": 20,
+      "description": "Customer service, FAQ bots with repeated queries"
+    },
+    "code-assistant": {
+      "hitRate": 45,
+      "prefix": 30,
+      "semantic": 5,
+      "multiturn": 10,
+      "description": "IDE integration, code completion with context"
+    },
+    "rag-pipeline": {
+      "hitRate": 30,
+      "prefix": 15,
+      "semantic": 10,
+      "multiturn": 5,
+      "description": "Document Q&A with unique queries"
+    },
+    "batch-processing": {
+      "hitRate": 75,
+      "prefix": 40,
+      "semantic": 25,
+      "multiturn": 10,
+      "description": "Data processing with repeated templates"
+    },
+    "real-time-api": {
+      "hitRate": 35,
+      "prefix": 20,
+      "semantic": 10,
+      "multiturn": 5,
+      "description": "Low-latency API with diverse queries"
+    },
+    "enterprise-search": {
+      "hitRate": 55,
+      "prefix": 20,
+      "semantic": 20,
+      "multiturn": 15,
+      "description": "Enterprise knowledge base search"
+    }
+  },
+
+  "kvCacheModelFactors": {
+    "8B":   { "memorySavingsGB": 8,    "baseThroughput": 1800, "baseLatency": 45 },
+    "70B":  { "memorySavingsGB": 24,   "baseThroughput": 500,  "baseLatency": 145 },
+    "405B": { "memorySavingsGB": 80,   "baseThroughput": 100,  "baseLatency": 380 },
+    "671B": { "memorySavingsGB": 120,  "baseThroughput": 80,   "baseLatency": 450 },
+    "1T":   { "memorySavingsGB": 180,  "baseThroughput": 60,   "baseLatency": 580 },
+    "2T":   { "memorySavingsGB": 300,  "baseThroughput": 40,   "baseLatency": 720 },
+    "5T":   { "memorySavingsGB": 600,  "baseThroughput": 25,   "baseLatency": 950 },
+    "10T":  { "memorySavingsGB": 1000, "baseThroughput": 15,   "baseLatency": 1200 },
+    "20T":  { "memorySavingsGB": 1800, "baseThroughput": 10,   "baseLatency": 1500 },
+    "30T":  { "memorySavingsGB": 2500, "baseThroughput": 7,    "baseLatency": 1800 }
+  },
+
+  "kvCacheEfficiencyFactors": {
+    "costReductionMax": 0.30,
+    "throughputMultiplierMax": 2.5,
+    "latencyReductionMax": 0.70,
+    "concurrentBoostMax": 1.0,
+    "batchSizeBoostMax": 0.75,
+    "f5SynergyBonusLow": "5-8%",
+    "f5SynergyBonusMid": "8-12%",
+    "f5SynergyBonusHigh": "12-18%"
+  },
+
+  "f5ImpactFactors": {
+    "baseOverheadOffload": 15,
+    "maxAdditionalOffload": 10,
+    "hitRateBoostTiers": {
+      "low": { "threshold": 30, "boost": 5 },
+      "mid": { "threshold": 60, "boost": 8 },
+      "high": { "threshold": 80, "boost": 10 },
+      "max": { "threshold": 100, "boost": 12 }
+    },
+    "utilizationContribution": 0.15,
+    "effectiveSavingsMultiplier": 0.30,
+    "methodologyReference": "Util_Boost = Base × KV_Cache × Workload × Disagg × Ratio × GPU_Gen × Model",
+    "kvCacheNormalizer": 65,
+    "description": "F5 DPU impact factors connected to the methodology formula"
   }
 }
