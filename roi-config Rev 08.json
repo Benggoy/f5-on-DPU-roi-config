@@ -1,6 +1,6 @@
 {
-  "version": "2.7.0",
-  "lastUpdated": "2026-01-16T14:00:00Z",
+  "version": "2.8.0",
+  "lastUpdated": "2026-01-18T10:00:00Z",
   "configSource": "github",
 
   "gpuTypes": {
@@ -8,7 +8,12 @@
     "H100": { "name": "H100", "memory_gb": 80, "bandwidth_tbps": 3.35, "tdp_watts": 700, "generation": "Hopper", "available": true, "release_year": 2022, "hourly_cost": 3.5, "usable_memory_gb": 70 },
     "H200": { "name": "H200", "memory_gb": 141, "bandwidth_tbps": 4.8, "tdp_watts": 700, "generation": "Hopper", "available": true, "release_year": 2024, "hourly_cost": 4.5, "usable_memory_gb": 130 },
     "B200": { "name": "B200", "memory_gb": 192, "bandwidth_tbps": 8.0, "tdp_watts": 1000, "generation": "Blackwell", "available": true, "release_year": 2024, "hourly_cost": 6.0, "usable_memory_gb": 175 },
+    "B300": { "name": "B300", "memory_gb": 288, "bandwidth_tbps": 12.0, "tdp_watts": 1200, "generation": "Blackwell Ultra", "available": true, "release_year": 2025, "hourly_cost": 8.0, "usable_memory_gb": 265, "cuda_cores": 21760, "tensor_cores": 680, "fp8_tflops": 4500, "fp16_tflops": 2250, "memory_type": "HBM3e", "nvlink_gen": 5, "nvlink_bandwidth_gbps": 1800, "pcie_gen": 5 },
     "GB200": { "name": "GB200", "memory_gb": 384, "bandwidth_tbps": 16.0, "tdp_watts": 2700, "generation": "Blackwell", "available": true, "release_year": 2025, "hourly_cost": 7.0, "usable_memory_gb": 350 },
+    "GB300": { "name": "GB300", "memory_gb": 576, "bandwidth_tbps": 24.0, "tdp_watts": 2900, "generation": "Blackwell Ultra", "available": true, "release_year": 2025, "hourly_cost": 10.0, "usable_memory_gb": 530, "description": "Grace CPU + 2x B300 GPUs superchip" },
+    "NVL72": { "name": "GB200 NVL72", "memory_gb": 13824, "bandwidth_tbps": 576.0, "tdp_watts": 120000, "generation": "Blackwell NVL", "available": true, "release_year": 2025, "hourly_cost": 350.0, "usable_memory_gb": 12700, "gpu_count": 72, "grace_cpus": 36, "nvlink_domain": "full-rack", "fp8_tflops": 720000, "fp4_tflops": 1440000, "description": "Full rack: 72 Blackwell GPUs + 36 Grace CPUs with NVLink interconnect" },
+    "NVL36": { "name": "GB200 NVL36", "memory_gb": 6912, "bandwidth_tbps": 288.0, "tdp_watts": 60000, "generation": "Blackwell NVL", "available": true, "release_year": 2025, "hourly_cost": 180.0, "usable_memory_gb": 6350, "gpu_count": 36, "grace_cpus": 18, "nvlink_domain": "half-rack", "fp8_tflops": 360000, "description": "Half rack: 36 Blackwell GPUs + 18 Grace CPUs" },
+    "NVL8": { "name": "B200 NVL8", "memory_gb": 1536, "bandwidth_tbps": 64.0, "tdp_watts": 10200, "generation": "Blackwell NVL", "available": true, "release_year": 2025, "hourly_cost": 55.0, "usable_memory_gb": 1400, "gpu_count": 8, "form_factor": "8U", "nvlink_domain": "8-gpu", "fp8_tflops": 36000, "fp4_tflops": 72000, "description": "8x B200 GPUs in single NVLink domain, ideal for inference at scale" },
     "R200": { "name": "R200", "memory_gb": 288, "bandwidth_tbps": 22.0, "tdp_watts": 1800, "generation": "Vera Rubin", "available": false, "speculative": true, "release_year": 2027, "hourly_cost": 8.0, "usable_memory_gb": 265 },
     "R200-Ultra": { "name": "R200-Ultra", "memory_gb": 1024, "bandwidth_tbps": 28.0, "tdp_watts": 2200, "generation": "Vera Rubin", "available": false, "speculative": true, "release_year": 2027, "hourly_cost": 12.0, "usable_memory_gb": 950 },
     "R300": { "name": "R300", "memory_gb": 512, "bandwidth_tbps": 40.0, "tdp_watts": 2000, "generation": "Vera Rubin Next", "available": false, "speculative": true, "release_year": 2028, "hourly_cost": 15.0, "usable_memory_gb": 470 },
@@ -29,8 +34,12 @@
     "H200": { "memory": 141, "powerW": 700, "cost": 45000, "mult": 1.5, "tflops": 990, "bandwidthTBs": 4.8, "arch": "Hopper", "tensorGen": 4 },
     "B100": { "memory": 192, "powerW": 700, "cost": 110000, "mult": 1.8, "tflops": 900, "bandwidthTBs": 8.0, "arch": "Blackwell", "tensorGen": 5 },
     "B200": { "memory": 192, "powerW": 1000, "cost": 135000, "mult": 2.2, "tflops": 1200, "bandwidthTBs": 8.0, "arch": "Blackwell", "tensorGen": 5 },
+    "B300": { "memory": 288, "powerW": 1200, "cost": 175000, "mult": 3.0, "tflops": 2250, "bandwidthTBs": 12.0, "arch": "Blackwell-Ultra", "tensorGen": 5, "fp8Tflops": 4500, "memoryType": "HBM3e", "nvlinkBandwidth": 1800, "cudaCores": 21760, "tensorCores": 680, "pcie": "5.0x16" },
     "GB200": { "memory": 384, "powerW": 1000, "cost": 120000, "mult": 2.5, "tflops": 1000, "bandwidthTBs": 16.0, "arch": "Grace-Blackwell", "tensorGen": 5 },
-    "GB300": { "memory": 288, "powerW": 1200, "cost": 150000, "mult": 3.75, "tflops": 1500, "bandwidthTBs": 16.0, "arch": "Grace-Blackwell", "tensorGen": 5 },
+    "GB300": { "memory": 576, "powerW": 1450, "cost": 200000, "mult": 4.0, "tflops": 2250, "bandwidthTBs": 24.0, "arch": "Grace-Blackwell-Ultra", "tensorGen": 5, "description": "Grace CPU + 2x B300 superchip", "graceCores": 72 },
+    "NVL72": { "memory": 13824, "powerW": 120000, "cost": 3000000, "mult": 15.0, "tflops": 720000, "bandwidthTBs": 576.0, "arch": "Blackwell-NVL-Rack", "tensorGen": 5, "gpuCount": 72, "graceCpus": 36, "formFactor": "full-rack", "fp4Tflops": 1440000, "description": "Full rack: 72 Blackwell GPUs with NVLink" },
+    "NVL36": { "memory": 6912, "powerW": 60000, "cost": 1600000, "mult": 8.0, "tflops": 360000, "bandwidthTBs": 288.0, "arch": "Blackwell-NVL-HalfRack", "tensorGen": 5, "gpuCount": 36, "graceCpus": 18, "formFactor": "half-rack", "description": "Half rack: 36 Blackwell GPUs with NVLink" },
+    "NVL8": { "memory": 1536, "powerW": 10200, "cost": 400000, "mult": 5.0, "tflops": 36000, "bandwidthTBs": 64.0, "arch": "Blackwell-NVL8", "tensorGen": 5, "gpuCount": 8, "formFactor": "8U", "fp4Tflops": 72000, "description": "8x B200 GPUs in NVLink domain for inference" },
     "R200": { "memory": 288, "powerW": 1800, "cost": 200000, "mult": 5.0, "tflops": 2500, "bandwidthTBs": 22.0, "arch": "Rubin", "tensorGen": 6 },
     "R200-Ultra": { "memory": 1024, "powerW": 2200, "cost": 350000, "mult": 7.5, "tflops": 5000, "bandwidthTBs": 44.0, "arch": "Rubin-Ultra", "tensorGen": 6 },
     "R300": { "memory": 512, "powerW": 2000, "cost": 400000, "mult": 10.0, "tflops": 6000, "bandwidthTBs": 40.0, "arch": "Rubin-Next", "tensorGen": 7 },
@@ -131,16 +140,16 @@
   },
 
   "gpusPerReplica": {
-    "8B":   { "RTX-6000-Ada": 1,   "H100": 1,    "H200": 1,   "B200": 1,   "GB200": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
-    "70B":  { "RTX-6000-Ada": 8,   "H100": 4,    "H200": 2,   "B200": 2,   "GB200": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
-    "405B": { "RTX-6000-Ada": 32,  "H100": 16,   "H200": 8,   "B200": 6,   "GB200": 3,   "R200": 2,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
-    "671B": { "RTX-6000-Ada": 48,  "H100": 24,   "H200": 12,  "B200": 8,   "GB200": 4,   "R200": 3,   "R200-Ultra": 1,  "R300": 2,  "R400": 1 },
-    "1T":   { "RTX-6000-Ada": 80,  "H100": 40,   "H200": 20,  "B200": 14,  "GB200": 7,   "R200": 5,   "R200-Ultra": 2,  "R300": 3,  "R400": 2 },
-    "2T":   { "RTX-6000-Ada": 144, "H100": 72,   "H200": 36,  "B200": 24,  "GB200": 12,  "R200": 8,   "R200-Ultra": 3,  "R300": 5,  "R400": 3 },
-    "5T":   { "RTX-6000-Ada": 320, "H100": 160,  "H200": 80,  "B200": 54,  "GB200": 27,  "R200": 18,  "R200-Ultra": 6,  "R300": 12, "R400": 8 },
-    "10T":  { "RTX-6000-Ada": 640, "H100": 320,  "H200": 160, "B200": 108, "GB200": 54,  "R200": 36,  "R200-Ultra": 12, "R300": 24, "R400": 12 },
-    "20T":  { "RTX-6000-Ada": 1280, "H100": 640,  "H200": 320, "B200": 216, "GB200": 108, "R200": 72,  "R200-Ultra": 24, "R300": 48, "R400": 24 },
-    "30T":  { "RTX-6000-Ada": 1920, "H100": 960,  "H200": 480, "B200": 324, "GB200": 162, "R200": 108, "R200-Ultra": 36, "R300": 72, "R400": 36 }
+    "8B":   { "RTX-6000-Ada": 1,   "H100": 1,    "H200": 1,   "B200": 1,   "B300": 1,   "GB200": 1,   "GB300": 1,   "NVL8": 1,   "NVL36": 1,  "NVL72": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
+    "70B":  { "RTX-6000-Ada": 8,   "H100": 4,    "H200": 2,   "B200": 2,   "B300": 1,   "GB200": 1,   "GB300": 1,   "NVL8": 1,   "NVL36": 1,  "NVL72": 1,   "R200": 1,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
+    "405B": { "RTX-6000-Ada": 32,  "H100": 16,   "H200": 8,   "B200": 6,   "B300": 4,   "GB200": 3,   "GB300": 2,   "NVL8": 1,   "NVL36": 1,  "NVL72": 1,   "R200": 2,   "R200-Ultra": 1,  "R300": 1,  "R400": 1 },
+    "671B": { "RTX-6000-Ada": 48,  "H100": 24,   "H200": 12,  "B200": 8,   "B300": 6,   "GB200": 4,   "GB300": 3,   "NVL8": 1,   "NVL36": 1,  "NVL72": 1,   "R200": 3,   "R200-Ultra": 1,  "R300": 2,  "R400": 1 },
+    "1T":   { "RTX-6000-Ada": 80,  "H100": 40,   "H200": 20,  "B200": 14,  "B300": 10,  "GB200": 7,   "GB300": 5,   "NVL8": 1,   "NVL36": 1,  "NVL72": 1,   "R200": 5,   "R200-Ultra": 2,  "R300": 3,  "R400": 2 },
+    "2T":   { "RTX-6000-Ada": 144, "H100": 72,   "H200": 36,  "B200": 24,  "B300": 18,  "GB200": 12,  "GB300": 9,   "NVL8": 2,   "NVL36": 1,  "NVL72": 1,   "R200": 8,   "R200-Ultra": 3,  "R300": 5,  "R400": 3 },
+    "5T":   { "RTX-6000-Ada": 320, "H100": 160,  "H200": 80,  "B200": 54,  "B300": 40,  "GB200": 27,  "GB300": 20,  "NVL8": 4,   "NVL36": 2,  "NVL72": 1,   "R200": 18,  "R200-Ultra": 6,  "R300": 12, "R400": 8 },
+    "10T":  { "RTX-6000-Ada": 640, "H100": 320,  "H200": 160, "B200": 108, "B300": 80,  "GB200": 54,  "GB300": 40,  "NVL8": 8,   "NVL36": 3,  "NVL72": 2,   "R200": 36,  "R200-Ultra": 12, "R300": 24, "R400": 12 },
+    "20T":  { "RTX-6000-Ada": 1280, "H100": 640,  "H200": 320, "B200": 216, "B300": 160, "GB200": 108, "GB300": 80,  "NVL8": 16,  "NVL36": 6,  "NVL72": 3,   "R200": 72,  "R200-Ultra": 24, "R300": 48, "R400": 24 },
+    "30T":  { "RTX-6000-Ada": 1920, "H100": 960,  "H200": 480, "B200": 324, "B300": 240, "GB200": 162, "GB300": 120, "NVL8": 24,  "NVL36": 9,  "NVL72": 5,   "R200": 108, "R200-Ultra": 36, "R300": 72, "R400": 36 }
   },
 
   "gpuMatrixArchitectures": {
@@ -171,7 +180,12 @@
     "H200": 120,
     "B100": 163,
     "B200": 163,
+    "B300": 245,
     "GB200": 326,
+    "GB300": 490,
+    "NVL8": 1310,
+    "NVL36": 5900,
+    "NVL72": 11800,
     "R200": 245,
     "R200-Ultra": 870,
     "R300": 435,
@@ -993,7 +1007,7 @@
         "name": "NVLink 5.0 (Blackwell)",
         "bandwidthGBs": 1800,
         "latencyNs": 80,
-        "compatible": ["B200", "GB200"],
+        "compatible": ["B200", "B300", "GB200", "GB300", "NVL8", "NVL36", "NVL72"],
         "f5Bonus": 0.03
       },
       "nvlink-6": {
@@ -1132,6 +1146,34 @@
         "storage": "portworx-px-fast",
         "interconnect": "pcie-5",
         "description": "Kubernetes-native AI workloads"
+      },
+      "b300-enterprise": {
+        "name": "B300 Enterprise (B300 + Pure FlashBlade S500)",
+        "gpu": "B300",
+        "storage": "pure-storage-flashblade-s500",
+        "interconnect": "nvlink-5",
+        "description": "High-performance Blackwell Ultra deployment"
+      },
+      "nvl8-inference": {
+        "name": "NVL8 Inference Scale (NVL8 + VAST DataStore)",
+        "gpu": "NVL8",
+        "storage": "vast-data-datastore",
+        "interconnect": "nvlink-5",
+        "description": "8-GPU NVLink domain optimized for inference workloads"
+      },
+      "nvl72-datacenter": {
+        "name": "NVL72 Datacenter (NVL72 + DDN Infinia)",
+        "gpu": "NVL72",
+        "storage": "ddn-infinia",
+        "interconnect": "nvlink-5",
+        "description": "Full-rack Blackwell deployment for largest models"
+      },
+      "gb300-supercompute": {
+        "name": "GB300 Supercompute (GB300 + WEKA)",
+        "gpu": "GB300",
+        "storage": "weka-data-platform",
+        "interconnect": "nvlink-5",
+        "description": "Grace-Blackwell Ultra superchip with high-performance storage"
       }
     }
   }
