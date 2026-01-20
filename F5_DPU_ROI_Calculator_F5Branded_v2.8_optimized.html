@@ -4602,6 +4602,12 @@ body.light-mode .theme-toggle button.active {
                 <td id="tech-eff-delta" class="positive">+39%</td>
               </tr>
               <tr>
+                <td>Tokens per Watt <span style="cursor:help;color:#94a3b8;font-size:0.75rem;" title="Power Efficiency: Higher = Better">ⓘ</span></td>
+                <td id="tech-tpw-base">--</td>
+                <td id="tech-tpw-f5">--</td>
+                <td id="tech-tpw-delta" class="positive">--</td>
+              </tr>
+              <tr>
                 <td data-i18n="tech_latency">TTFT Latency</td>
                 <td id="tech-lat-base">150ms</td>
                 <td id="tech-lat-f5">120ms</td>
@@ -4609,6 +4615,9 @@ body.light-mode .theme-toggle button.active {
               </tr>
             </tbody>
           </table>
+          <div style="margin-top: 8px; padding: 8px 12px; background: #f0fdf4; border-left: 3px solid #22c55e; border-radius: 4px; font-size: 0.8rem; color: #166534;">
+            <strong>📊 Efficiency Note:</strong> For Tokens/Joule and Tokens/Watt, <em>higher values = better efficiency</em>. F5 improves computational output per unit of energy.
+          </div>
         </div>
 
         <div class="card">
@@ -18299,6 +18308,18 @@ Calculated from methodology utilization factors`;
     document.getElementById('tech-eff-f5').textContent = m.efficiency.f5.toFixed(3);
     document.getElementById('tech-eff-delta').textContent = '+' + fmt.pctInt(effDelta);
 
+    // Tokens per Watt calculation
+    if (document.getElementById('tech-tpw-base')) {
+      var powerKwBase = state.gpuCount * (state.selectedGpu && state.selectedGpu.tdp_watts ? state.selectedGpu.tdp_watts : 700) / 1000;
+      var powerKwF5 = powerKwBase * 1.03;
+      var tpwBase = m.throughput.base / powerKwBase;
+      var tpwF5 = m.throughput.f5 / powerKwF5;
+      var tpwDelta = ((tpwF5 - tpwBase) / tpwBase * 100);
+      document.getElementById('tech-tpw-base').textContent = tpwBase.toFixed(1);
+      document.getElementById('tech-tpw-f5').textContent = tpwF5.toFixed(1);
+      document.getElementById('tech-tpw-delta').textContent = '+' + fmt.pctInt(tpwDelta);
+    }
+
     // ROI-context aware coloring for technical metrics
     // If ROI is negative, show metrics in amber/warning color instead of green
     const roiIsNegative = m.financial.roi < 0;
@@ -19148,8 +19169,9 @@ Calculated from methodology utilization factors`;
         f5Color = '#64748b';
         kvColor = '#64748b';
       } else if (type === 'total') {
-        f5Color = '#E21D38';
-        kvColor = '#7c3aed';
+        // Final TCO: green if lower than baseline (savings), red if higher (increase)
+        f5Color = f5Values[i] < baselineTCO ? '#059669' : '#dc2626';
+        kvColor = kvValues[i] < baselineTCO ? '#059669' : '#dc2626';
       } else if (type === 'positive') {
         f5Color = '#059669';
         kvColor = '#7c3aed';
@@ -19420,8 +19442,9 @@ Calculated from methodology utilization factors`;
       // Colors
       let f5Color, kvColor;
       if (type === 'total') {
-        f5Color = '#E21D38';
-        kvColor = '#7c3aed';
+        // Net Benefit: green if positive, red if negative
+        f5Color = f5Values[i] >= 0 ? '#059669' : '#dc2626';
+        kvColor = kvValues[i] >= 0 ? '#059669' : '#dc2626';
       } else if (type === 'positive') {
         f5Color = '#059669';
         kvColor = '#7c3aed';
