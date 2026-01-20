@@ -1,8 +1,8 @@
 {
-  "version": "2.9.0",
-  "lastUpdated": "2026-01-18T18:43:58Z",
+  "version": "2.10.0",
+  "lastUpdated": "2026-01-20T17:00:00Z",
   "configSource": "github",
-  "updateNotes": "Weekly update: GPU pricing from AWS/Lambda/CoreWeave, Vera Rubin CES 2026 specs, Llama 4 model additions",
+  "updateNotes": "Jan 20 2026: GPU prices dropped significantly - H100 $2.29, H200 $2.50, B200 $3.49. Added Llama 4 Behemoth, DeepSeek V4, Mistral 3 Large.",
   "gpuTypes": {
     "RTX-6000-Ada": {
       "name": "RTX 6000 Ada",
@@ -33,10 +33,10 @@
       "generation": "Hopper",
       "available": true,
       "release_year": 2022,
-      "hourly_cost": 2.49,
+      "hourly_cost": 2.29,
       "usable_memory_gb": 70,
       "msrp_usd": 27000,
-      "pricingSource": "Atlas Cloud, ThunderCompute Jan 2026",
+      "pricingSource": "RunPod $1.99, Lambda $2.99, median Jan 2026",
       "pricingConfidence": "verified"
     },
     "H200": {
@@ -47,10 +47,10 @@
       "generation": "Hopper",
       "available": true,
       "release_year": 2024,
-      "hourly_cost": 3.72,
+      "hourly_cost": 2.50,
       "usable_memory_gb": 130,
       "msrp_usd": 32000,
-      "pricingSource": "JarvisLabs, Google Cloud Spot Jan 2026",
+      "pricingSource": "NeevCloud $1.99, HPC-AI $2.19, GMI $2.50 Jan 2026",
       "pricingConfidence": "verified"
     },
     "B200": {
@@ -61,10 +61,10 @@
       "generation": "Blackwell",
       "available": true,
       "release_year": 2025,
-      "hourly_cost": 3.99,
+      "hourly_cost": 3.49,
       "usable_memory_gb": 180,
       "msrp_usd": 135000,
-      "pricingSource": "GetDeploying GPU comparison Jan 2026",
+      "pricingSource": "HPC-AI $1.49, GetDeploying $3.99, median Jan 2026",
       "pricingConfidence": "verified"
     },
     "B300": {
@@ -627,6 +627,28 @@
       "category": "current",
       "throughput_rpm": 3,
       "source": "DeepSeek V3/R1 - 37B active params"
+    },
+    "675B": {
+      "name": "675B",
+      "display_name": "675B (Mistral 3 Large MoE)",
+      "params_billions": 675,
+      "is_moe": true,
+      "active_params_billions": 41,
+      "category": "current",
+      "throughput_rpm": 3,
+      "multimodal": true,
+      "source": "Mistral 3 Large Dec 2025 - 41B active, multimodal"
+    },
+    "DeepSeek-V4": {
+      "name": "DeepSeek-V4",
+      "display_name": "DeepSeek V4 (Coming Feb 2026)",
+      "params_billions": 800,
+      "is_moe": true,
+      "active_params_billions": 45,
+      "category": "frontier",
+      "speculative": true,
+      "throughput_rpm": 2.5,
+      "source": "DeepSeek V4 - expected mid-Feb 2026, coding focus, Engram memory"
     },
     "1T": {
       "name": "1T",
