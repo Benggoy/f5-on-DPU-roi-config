@@ -6118,6 +6118,89 @@ body.light-mode .theme-toggle button.active {
             <div class="tco-summary-detail">Time to positive ROI</div>
           </div>
         </div>
+
+        <!-- CapEx vs OpEx Comparison Section -->
+        <div class="card" id="capex-opex-card" style="margin-top: 24px;">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div class="card-title">💼 CapEx vs OpEx Comparison</div>
+            <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">Buy vs Lease Analysis</span>
+          </div>
+
+          <!-- Summary KPI Cards -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;" id="capex-opex-summary-cards">
+            <div id="capex-total-card" style="background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%); padding: 16px; border-radius: 12px; border-left: 4px solid #3b82f6;">
+              <div style="color: #93c5fd; font-size: 0.8rem; margin-bottom: 4px;">CapEx (Buy)</div>
+              <div style="color: #fbbf24; font-size: 1.5rem; font-weight: 700;" id="capex-total-value">$62.03M</div>
+              <div style="color: #94a3b8; font-size: 0.75rem;">Total <span id="capex-years-label">3</span>-Year Cost</div>
+            </div>
+            <div id="opex-total-card" style="background: linear-gradient(135deg, #422006 0%, #78350f 100%); padding: 16px; border-radius: 12px; border-left: 4px solid #f59e0b;">
+              <div style="color: #fcd34d; font-size: 0.8rem; margin-bottom: 4px;">OpEx (Lease)</div>
+              <div style="color: #fbbf24; font-size: 1.5rem; font-weight: 700;" id="opex-total-value">$77.65M</div>
+              <div style="color: #94a3b8; font-size: 0.75rem;">Total <span id="opex-years-label">3</span>-Year Cost</div>
+            </div>
+            <div id="capex-savings-card" style="background: linear-gradient(135deg, #064e3b 0%, #047857 100%); padding: 16px; border-radius: 12px; border-left: 4px solid #10b981;">
+              <div style="color: #6ee7b7; font-size: 0.8rem; margin-bottom: 4px;" id="savings-label">CapEx Savings</div>
+              <div style="color: #34d399; font-size: 1.5rem; font-weight: 700;" id="capex-savings-value">+$15.62M</div>
+              <div style="color: #94a3b8; font-size: 0.75rem;" id="savings-description">Buy is cheaper</div>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div class="chart-container" id="capex-opex-chart" style="min-height: 280px;"></div>
+
+          <!-- Breakdown Tables -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px;">
+            <div id="capex-breakdown" style="background: #1e293b; padding: 16px; border-radius: 8px; border: 1px solid #334155;">
+              <div style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 12px; border-bottom: 1px solid #475569; padding-bottom: 8px;">CapEx Breakdown</div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #cbd5e1;">Upfront Investment:</span>
+                <span style="color: #3b82f6; font-family: monospace;" id="capex-upfront">$44.63M</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #cbd5e1;">Annual OpEx:</span>
+                <span style="color: #3b82f6; font-family: monospace;" id="capex-annual-opex">$5.80M/yr</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #cbd5e1;">Depreciation:</span>
+                <span style="color: #3b82f6; font-family: monospace;" id="capex-depreciation">$14.88M/yr</span>
+              </div>
+            </div>
+            <div id="opex-breakdown" style="background: #1e293b; padding: 16px; border-radius: 8px; border: 1px solid #334155;">
+              <div style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 12px; border-bottom: 1px solid #475569; padding-bottom: 8px;">OpEx Breakdown</div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #cbd5e1;">Upfront Investment:</span>
+                <span style="color: #f59e0b; font-family: monospace;">$0</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <span style="color: #cbd5e1;">Annual Lease + OpEx:</span>
+                <span style="color: #f59e0b; font-family: monospace;" id="opex-annual-cost">$25.88M/yr</span>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: #cbd5e1;">Lease Premium:</span>
+                <span style="color: #f59e0b; font-family: monospace;" id="opex-lease-premium">+35%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Toggle for bundled DPU value -->
+          <div id="dpu-value-toggle-section" style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; display: none;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.85rem; color: #475569;">
+              <input type="checkbox" id="show-dpu-value-toggle" style="width: 16px; height: 16px;">
+              <span>Include estimated DPU hardware value (<span id="dpu-value-estimate">$3,800</span>/DPU) for comparison transparency</span>
+            </label>
+          </div>
+
+          <!-- Recommendation -->
+          <div id="capex-opex-recommendation" style="margin-top: 16px; padding: 16px; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 8px; border-left: 4px solid #10b981;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 1.2rem;">✓</span>
+              <span style="font-weight: 600; color: #065f46;">Recommendation: CapEx (Buy)</span>
+            </div>
+            <div style="color: #047857; font-size: 0.9rem; margin-top: 4px;" id="recommendation-detail">
+              Purchasing saves $15.62M over 3 years. Break-even vs lease at Year 3.
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -6242,6 +6325,14 @@ body.light-mode .theme-toggle button.active {
           <div class="card-title">📈 Cumulative Cash Flow Chart</div>
         </div>
         <div class="chart-container" id="cumulative-chart"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⏱️ Investment Payback Timeline</div>
+        </div>
+        <div class="chart-container" id="breakeven-chart"></div>
+        <div id="breakeven-summary" style="text-align: center; padding: 12px; font-size: 0.9rem;"></div>
       </div>
     </div>
 
@@ -19717,6 +19808,12 @@ Calculated from methodology utilization factors`;
 
     // Cumulative chart
     renderCumulativeChart(m);
+
+    // Breakeven timeline chart
+    renderBreakevenChart(m);
+
+    // CapEx vs OpEx comparison chart
+    renderCapExVsOpExComparison(m);
   }
 
   // === CUMULATIVE CASH FLOW CHART ===
@@ -19869,6 +19966,384 @@ Calculated from methodology utilization factors`;
 
     svg += '</svg>';
     container.innerHTML = svg;
+  }
+
+  // === INVESTMENT PAYBACK TIMELINE CHART ===
+  function renderBreakevenChart(m) {
+    const container = document.getElementById('breakeven-chart');
+    const summaryEl = document.getElementById('breakeven-summary');
+    if (!container) return;
+
+    const width = 800;
+    const height = 280;
+    const margin = { top: 30, right: 40, bottom: 50, left: 80 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    // Calculate investment (CapEx)
+    const dpuHardwareCost = m.financial.dpuHardwareCost || 0;
+    const isSubscription = m.financial.isSubscription;
+    const annualF5Cost = m.financial.annualF5Cost || m.financial.investment;
+    const storageInfraCost = m.storageIntegration?.infrastructureCost?.cost || 0;
+
+    // For CapEx model: full license upfront; for subscription: only hardware
+    const investment = dpuHardwareCost + storageInfraCost +
+      (isSubscription ? 0 : annualF5Cost * state.licenseTerm);
+
+    // Annual gross benefit (undiscounted)
+    const annualGrossBenefit = (m.financial.throughputValue || 0) +
+      (m.financial.opexSavings || 0) -
+      Math.abs(m.financial.powerDelta || 0) +
+      (m.financial.includeCapacityInRoi ? (m.financial.capacityValue || 0) : 0);
+
+    // For subscription: subtract annual license cost from benefits
+    const annualNetBenefit = isSubscription ?
+      annualGrossBenefit - annualF5Cost : annualGrossBenefit;
+
+    // Calculate breakeven year
+    const breakevenYears = annualNetBenefit > 0 ? investment / annualNetBenefit : Infinity;
+
+    // Chart extends to show breakeven or max 10 years
+    const maxYears = 10;
+    const chartYears = Math.min(maxYears, Math.max(state.licenseTerm + 2,
+      breakevenYears < Infinity ? Math.ceil(breakevenYears) + 1 : maxYears));
+
+    // Generate cumulative savings points (undiscounted)
+    const points = [];
+    for (let y = 0; y <= chartYears; y++) {
+      points.push({
+        year: y,
+        cumulative: y * annualNetBenefit
+      });
+    }
+
+    // Scale calculations
+    const maxVal = Math.max(investment * 1.2, points[points.length - 1].cumulative * 1.1);
+    const minVal = 0;
+    const range = maxVal - minVal || 1;
+
+    const scaleX = (x) => margin.left + (x / chartYears) * chartWidth;
+    const scaleY = (y) => margin.top + chartHeight - ((y - minVal) / range) * chartHeight;
+
+    // Handle edge cases
+    if (investment <= 0) {
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #64748b;">No upfront investment to recover</div>';
+      if (summaryEl) summaryEl.innerHTML = '';
+      return;
+    }
+
+    if (annualNetBenefit <= 0) {
+      container.innerHTML = '<div style="text-align: center; padding: 40px; color: #dc2626;">⚠️ Annual benefits do not exceed costs - no breakeven possible</div>';
+      if (summaryEl) summaryEl.innerHTML = '<span style="color: #dc2626;">Investment does not break even with current parameters</span>';
+      return;
+    }
+
+    let svg = `<svg viewBox="0 0 ${width} ${height}" style="font-family: Inter, system-ui, sans-serif;">`;
+
+    // Gradient for savings area
+    svg += `<defs>
+      <linearGradient id="savingsGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#059669" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#059669" stop-opacity="0.05"/>
+      </linearGradient>
+    </defs>`;
+
+    // Grid lines
+    for (let i = 0; i <= 5; i++) {
+      const y = margin.top + (chartHeight / 5) * i;
+      const val = maxVal - (range / 5) * i;
+      svg += `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#e2e8f0" stroke-dasharray="4"/>`;
+      svg += `<text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" font-size="11" fill="#64748b">$${(val/1e6).toFixed(1)}M</text>`;
+    }
+
+    // X-axis labels
+    for (let y = 0; y <= chartYears; y++) {
+      const x = scaleX(y);
+      svg += `<text x="${x}" y="${height - 15}" text-anchor="middle" font-size="11" fill="#64748b">Year ${y}</text>`;
+    }
+
+    // Investment threshold line (red dashed)
+    const investY = scaleY(investment);
+    svg += `<line x1="${margin.left}" y1="${investY}" x2="${width - margin.right}" y2="${investY}" stroke="#dc2626" stroke-width="2" stroke-dasharray="8,4"/>`;
+    svg += `<text x="${margin.left + 5}" y="${investY - 8}" font-size="11" fill="#dc2626" font-weight="600">CapEx: $${(investment/1e6).toFixed(2)}M</text>`;
+
+    // License term indicator (gray dashed vertical)
+    const termX = scaleX(state.licenseTerm);
+    svg += `<line x1="${termX}" y1="${margin.top}" x2="${termX}" y2="${margin.top + chartHeight}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="4,4"/>`;
+    svg += `<text x="${termX}" y="${margin.top - 8}" text-anchor="middle" font-size="10" fill="#94a3b8">${state.licenseTerm}-Year Term</text>`;
+
+    // Cumulative savings area
+    let areaPath = `M ${scaleX(0)} ${scaleY(0)}`;
+    points.forEach(p => areaPath += ` L ${scaleX(p.year)} ${scaleY(p.cumulative)}`);
+    areaPath += ` L ${scaleX(chartYears)} ${scaleY(0)} Z`;
+    svg += `<path d="${areaPath}" fill="url(#savingsGradient)"/>`;
+
+    // Cumulative savings line
+    let linePath = `M ${scaleX(0)} ${scaleY(0)}`;
+    points.forEach(p => linePath += ` L ${scaleX(p.year)} ${scaleY(p.cumulative)}`);
+    svg += `<path d="${linePath}" fill="none" stroke="#059669" stroke-width="3"/>`;
+
+    // Data points
+    points.forEach((p, i) => {
+      if (i > 0) {
+        const color = p.cumulative >= investment ? '#059669' : '#64748b';
+        svg += `<circle cx="${scaleX(p.year)}" cy="${scaleY(p.cumulative)}" r="5" fill="${color}" stroke="white" stroke-width="2"/>`;
+      }
+    });
+
+    // Breakeven point marker (if within chart range)
+    if (breakevenYears <= chartYears && breakevenYears > 0) {
+      const beX = scaleX(breakevenYears);
+      const beY = scaleY(investment);
+
+      // Star marker
+      svg += `<circle cx="${beX}" cy="${beY}" r="10" fill="#E21D38" stroke="white" stroke-width="2"/>`;
+      svg += `<text x="${beX}" y="${beY + 4}" text-anchor="middle" font-size="10" fill="white" font-weight="bold">★</text>`;
+
+      // Annotation
+      const labelY = beY - 20;
+      const breakevenText = breakevenYears < 1 ?
+        `${(breakevenYears * 12).toFixed(1)} months` :
+        `${breakevenYears.toFixed(1)} years`;
+      svg += `<text x="${beX}" y="${labelY}" text-anchor="middle" font-size="12" fill="#E21D38" font-weight="700">Breakeven: ${breakevenText}</text>`;
+    }
+
+    // Legend
+    svg += `<rect x="${width - 180}" y="${margin.top}" width="140" height="50" fill="white" stroke="#e2e8f0" rx="4"/>`;
+    svg += `<line x1="${width - 170}" y1="${margin.top + 15}" x2="${width - 145}" y2="${margin.top + 15}" stroke="#059669" stroke-width="3"/>`;
+    svg += `<text x="${width - 140}" y="${margin.top + 19}" font-size="10" fill="#374151">Cumulative Savings</text>`;
+    svg += `<line x1="${width - 170}" y1="${margin.top + 35}" x2="${width - 145}" y2="${margin.top + 35}" stroke="#dc2626" stroke-width="2" stroke-dasharray="4"/>`;
+    svg += `<text x="${width - 140}" y="${margin.top + 39}" font-size="10" fill="#374151">CapEx Investment</text>`;
+
+    svg += '</svg>';
+    container.innerHTML = svg;
+
+    // Summary text
+    if (summaryEl) {
+      if (breakevenYears <= state.licenseTerm) {
+        const breakevenText = breakevenYears < 1 ?
+          `${(breakevenYears * 12).toFixed(1)} months` :
+          `${breakevenYears.toFixed(1)} years`;
+        summaryEl.innerHTML = `<span style="color: #059669; font-weight: 600;">✓ Breakeven in ${breakevenText}</span> <span style="color: #64748b;">(within ${state.licenseTerm}-year license term)</span>`;
+      } else if (breakevenYears <= maxYears) {
+        const breakevenText = `${breakevenYears.toFixed(1)} years`;
+        summaryEl.innerHTML = `<span style="color: #f59e0b; font-weight: 600;">⚠️ Breakeven in ${breakevenText}</span> <span style="color: #64748b;">(extends beyond ${state.licenseTerm}-year term)</span>`;
+      } else {
+        summaryEl.innerHTML = `<span style="color: #dc2626; font-weight: 600;">✗ Breakeven exceeds 10 years</span> <span style="color: #64748b;">(consider adjusting parameters)</span>`;
+      }
+    }
+  }
+
+  // === CAPEX VS OPEX COMPARISON CHART ===
+  function renderCapExVsOpExComparison(m) {
+    const chartContainer = document.getElementById('capex-opex-chart');
+    if (!chartContainer) return;
+
+    // Get settings
+    const showDpuValue = document.getElementById('show-dpu-value-toggle')?.checked || false;
+    const years = state.licenseTerm;
+    const maxYears = Math.max(years + 2, 6); // Extend to show crossover
+
+    // Calculate DPU count
+    const dpus = Math.ceil(state.gpuCount / state.gpuDpuRatio);
+
+    // === CAPEX (BUY) MODEL ===
+    // Year 0: Full license + DPU hardware (if addon or showing estimated value)
+    const dpuHardwareCost = state.dpuCostModel === 'addon'
+      ? (m.financial.dpuHardwareCost || dpus * (state.dpuHardwarePrice || 3800))
+      : (showDpuValue ? dpus * 3800 : 0);
+    const capexYear0 = (m.financial.annualF5Cost * years) + dpuHardwareCost;
+
+    // Annual OpEx (power increase + reduced operations cost)
+    const annualPowerDelta = Math.abs(m.financial.powerDelta || 0);
+    const annualOpExReduced = state.gpuCount * state.baseOpexPerGpu * (1 - state.opexReductionPct / 100);
+    const capexAnnualOpEx = annualPowerDelta + annualOpExReduced;
+
+    // Depreciation (for display, 5-year straight-line)
+    const depreciation = capexYear0 / 5;
+
+    // CapEx cumulative cost over time
+    const capexPoints = [];
+    for (let y = 0; y <= maxYears; y++) {
+      capexPoints.push({
+        year: y,
+        cumulative: capexYear0 + (capexAnnualOpEx * y)
+      });
+    }
+
+    // === OPEX (LEASE/SUBSCRIBE) MODEL ===
+    const leasePremium = 1.35; // Leasing typically 35% more expensive
+    const opexAnnualLeaseCost = (m.financial.annualF5Cost * leasePremium) + capexAnnualOpEx;
+
+    // OpEx cumulative cost over time
+    const opexPoints = [];
+    for (let y = 0; y <= maxYears; y++) {
+      opexPoints.push({
+        year: y,
+        cumulative: opexAnnualLeaseCost * y
+      });
+    }
+
+    // === CROSSOVER CALCULATION ===
+    const annualSavingsFromBuying = opexAnnualLeaseCost - capexAnnualOpEx;
+    const crossoverYear = annualSavingsFromBuying > 0
+      ? capexYear0 / annualSavingsFromBuying
+      : Infinity;
+
+    // Total costs at license term end
+    const capexTotal = capexPoints[years]?.cumulative || (capexYear0 + capexAnnualOpEx * years);
+    const opexTotal = opexPoints[years]?.cumulative || (opexAnnualLeaseCost * years);
+    const savings = opexTotal - capexTotal;
+    const capexWins = savings > 0;
+
+    // === UPDATE SUMMARY CARDS ===
+    const fmtM = (v) => '$' + (v / 1e6).toFixed(2) + 'M';
+    document.getElementById('capex-total-value').textContent = fmtM(capexTotal);
+    document.getElementById('opex-total-value').textContent = fmtM(opexTotal);
+    document.getElementById('capex-years-label').textContent = years;
+    document.getElementById('opex-years-label').textContent = years;
+    document.getElementById('capex-savings-value').textContent = (capexWins ? '+' : '') + fmtM(Math.abs(savings));
+
+    // Update savings card styling
+    const savingsCard = document.getElementById('capex-savings-card');
+    const savingsLabel = document.getElementById('savings-label');
+    const savingsDesc = document.getElementById('savings-description');
+    if (capexWins) {
+      savingsCard.style.background = 'linear-gradient(135deg, #064e3b 0%, #047857 100%)';
+      savingsCard.style.borderLeftColor = '#10b981';
+      savingsLabel.textContent = 'CapEx Savings';
+      savingsLabel.style.color = '#6ee7b7';
+      document.getElementById('capex-savings-value').style.color = '#34d399';
+      savingsDesc.textContent = 'Buy is cheaper';
+    } else {
+      savingsCard.style.background = 'linear-gradient(135deg, #7f1d1d 0%, #b91c1c 100%)';
+      savingsCard.style.borderLeftColor = '#ef4444';
+      savingsLabel.textContent = 'OpEx Savings';
+      savingsLabel.style.color = '#fca5a5';
+      document.getElementById('capex-savings-value').style.color = '#f87171';
+      savingsDesc.textContent = 'Lease is cheaper';
+    }
+
+    // === UPDATE BREAKDOWN TABLES ===
+    document.getElementById('capex-upfront').textContent = fmtM(capexYear0);
+    document.getElementById('capex-annual-opex').textContent = fmtM(capexAnnualOpEx) + '/yr';
+    document.getElementById('capex-depreciation').textContent = fmtM(depreciation) + '/yr';
+    document.getElementById('opex-annual-cost').textContent = fmtM(opexAnnualLeaseCost) + '/yr';
+
+    // === UPDATE TOGGLE VISIBILITY ===
+    const toggleSection = document.getElementById('dpu-value-toggle-section');
+    if (state.dpuCostModel === 'addon') {
+      toggleSection.style.display = 'none';
+    } else {
+      toggleSection.style.display = 'block';
+      document.getElementById('dpu-value-estimate').textContent = '$' + (state.dpuHardwarePrice || 3800).toLocaleString();
+    }
+
+    // === UPDATE RECOMMENDATION ===
+    const recEl = document.getElementById('capex-opex-recommendation');
+    const recDetail = document.getElementById('recommendation-detail');
+    if (capexWins) {
+      recEl.style.background = 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)';
+      recEl.style.borderLeftColor = '#10b981';
+      recEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">✓</span>
+          <span style="font-weight: 600; color: #065f46;">Recommendation: CapEx (Buy)</span>
+        </div>
+        <div style="color: #047857; font-size: 0.9rem; margin-top: 4px;">
+          Purchasing saves ${fmtM(savings)} over ${years} years. Break-even vs lease at Year ${crossoverYear.toFixed(1)}.
+        </div>
+      `;
+    } else {
+      recEl.style.background = 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)';
+      recEl.style.borderLeftColor = '#f59e0b';
+      recEl.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">⚠️</span>
+          <span style="font-weight: 600; color: #92400e;">Recommendation: OpEx (Lease)</span>
+        </div>
+        <div style="color: #78350f; font-size: 0.9rem; margin-top: 4px;">
+          Leasing saves ${fmtM(Math.abs(savings))} over ${years} years. Consider longer term for CapEx benefits.
+        </div>
+      `;
+    }
+
+    // === RENDER CHART ===
+    const width = 800;
+    const height = 280;
+    const margin = { top: 30, right: 40, bottom: 50, left: 80 };
+    const chartWidth = width - margin.left - margin.right;
+    const chartHeight = height - margin.top - margin.bottom;
+
+    // Scale calculations
+    const allVals = [...capexPoints.map(p => p.cumulative), ...opexPoints.map(p => p.cumulative)];
+    const maxVal = Math.max(...allVals) * 1.1;
+    const minVal = 0;
+    const range = maxVal - minVal || 1;
+
+    const scaleX = (x) => margin.left + (x / maxYears) * chartWidth;
+    const scaleY = (y) => margin.top + chartHeight - ((y - minVal) / range) * chartHeight;
+
+    let svg = `<svg viewBox="0 0 ${width} ${height}" style="font-family: Inter, system-ui, sans-serif;">`;
+
+    // Grid lines
+    for (let i = 0; i <= 5; i++) {
+      const y = margin.top + (chartHeight / 5) * i;
+      const val = maxVal - (range / 5) * i;
+      svg += `<line x1="${margin.left}" y1="${y}" x2="${width - margin.right}" y2="${y}" stroke="#334155" stroke-dasharray="4"/>`;
+      svg += `<text x="${margin.left - 10}" y="${y + 4}" text-anchor="end" font-size="11" fill="#64748b">$${(val/1e6).toFixed(0)}M</text>`;
+    }
+
+    // X-axis labels
+    for (let y = 0; y <= maxYears; y++) {
+      const x = scaleX(y);
+      svg += `<text x="${x}" y="${height - 15}" text-anchor="middle" font-size="11" fill="#64748b">Year ${y}</text>`;
+    }
+
+    // License term indicator (vertical dashed line)
+    const termX = scaleX(years);
+    svg += `<line x1="${termX}" y1="${margin.top}" x2="${termX}" y2="${margin.top + chartHeight}" stroke="#64748b" stroke-width="1" stroke-dasharray="6,4"/>`;
+    svg += `<text x="${termX}" y="${margin.top - 8}" text-anchor="middle" font-size="10" fill="#64748b">${years}-Year Term</text>`;
+
+    // CapEx line (blue)
+    let capexPath = `M ${scaleX(0)} ${scaleY(capexPoints[0].cumulative)}`;
+    capexPoints.forEach(p => capexPath += ` L ${scaleX(p.year)} ${scaleY(p.cumulative)}`);
+    svg += `<path d="${capexPath}" fill="none" stroke="#3b82f6" stroke-width="3"/>`;
+
+    // OpEx line (orange)
+    let opexPath = `M ${scaleX(0)} ${scaleY(opexPoints[0].cumulative)}`;
+    opexPoints.forEach(p => opexPath += ` L ${scaleX(p.year)} ${scaleY(p.cumulative)}`);
+    svg += `<path d="${opexPath}" fill="none" stroke="#f59e0b" stroke-width="3"/>`;
+
+    // Data points - CapEx
+    capexPoints.forEach((p, i) => {
+      svg += `<circle cx="${scaleX(p.year)}" cy="${scaleY(p.cumulative)}" r="5" fill="#3b82f6" stroke="white" stroke-width="2"/>`;
+    });
+
+    // Data points - OpEx
+    opexPoints.forEach((p, i) => {
+      svg += `<circle cx="${scaleX(p.year)}" cy="${scaleY(p.cumulative)}" r="5" fill="#f59e0b" stroke="white" stroke-width="2"/>`;
+    });
+
+    // Crossover marker (if within chart range)
+    if (crossoverYear > 0 && crossoverYear <= maxYears) {
+      const crossX = scaleX(crossoverYear);
+      const crossY = scaleY(capexYear0 + capexAnnualOpEx * crossoverYear);
+      svg += `<circle cx="${crossX}" cy="${crossY}" r="8" fill="#10b981" stroke="white" stroke-width="2"/>`;
+      svg += `<text x="${crossX}" y="${crossY - 15}" text-anchor="middle" font-size="11" fill="#10b981" font-weight="600">Break-even: ${crossoverYear.toFixed(1)}yr</text>`;
+    }
+
+    // Legend
+    svg += `<rect x="${width - 160}" y="${margin.top}" width="120" height="50" fill="#1e293b" stroke="#334155" rx="4"/>`;
+    svg += `<line x1="${width - 150}" y1="${margin.top + 15}" x2="${width - 125}" y2="${margin.top + 15}" stroke="#3b82f6" stroke-width="3"/>`;
+    svg += `<circle cx="${width - 137}" cy="${margin.top + 15}" r="4" fill="#3b82f6"/>`;
+    svg += `<text x="${width - 118}" y="${margin.top + 19}" font-size="10" fill="#94a3b8">CapEx (Buy)</text>`;
+    svg += `<line x1="${width - 150}" y1="${margin.top + 35}" x2="${width - 125}" y2="${margin.top + 35}" stroke="#f59e0b" stroke-width="3"/>`;
+    svg += `<circle cx="${width - 137}" cy="${margin.top + 35}" r="4" fill="#f59e0b"/>`;
+    svg += `<text x="${width - 118}" y="${margin.top + 39}" font-size="10" fill="#94a3b8">OpEx (Lease)</text>`;
+
+    svg += '</svg>';
+    chartContainer.innerHTML = svg;
   }
 
   // === SENSITIVITY ANALYSIS (Enhanced with multiple metrics) ===
@@ -21138,6 +21613,15 @@ Calculated from methodology utilization factors`;
         updateDashboard();
       });
     });
+
+    // DPU Value Toggle (for CapEx vs OpEx comparison)
+    const dpuValueToggle = document.getElementById('show-dpu-value-toggle');
+    if (dpuValueToggle) {
+      dpuValueToggle.addEventListener('change', () => {
+        const m = calculate();
+        renderCapExVsOpExComparison(m);
+      });
+    }
 
     // KV Cache slider
     document.getElementById('kv-cache').addEventListener('input', e => {
