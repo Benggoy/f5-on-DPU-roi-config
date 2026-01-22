@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>F5 GPU Provisioning Calculator</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; font-family: Arial, Helvetica, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    // F5 Brand Colors
+    const F5_COLORS = {
+      primary: {
+        red: '#DF0832',
+        blue: '#004892',
+        orange: '#ED7B0C',
+        lightBlue: '#0194D2',
+      },
+      secondary: {
+        yellow: '#FFD734',
+        green: '#A0BF37',
+      },
+      neutral: {
+        lightGray: '#E0E1DD',
+        mediumGray: '#ADAFAF',
+        darkGray: '#4D4F53',
+        white: '#FFFFFF',
+        black: '#000000',
+      },
+    };
+
+    // GPU Specifications - Comprehensive NVIDIA & AMD lineup
+    const GPU_SPECS = {
+      A100_40: {
+        memory: 40, name: 'A100 40GB', costPerYear: 15000, failureRate: 0.03,
+        bandwidth: 2000, tdp: 400, arch: 'Ampere', memType: 'HBM2e',
+        tokPerSecPer70B: 800, source: 'NVIDIA Spec Sheet',
+        category: 'nvidia-ampere'
+      },
+      A100_80: {
+        memory: 80, name: 'A100 80GB', costPerYear: 18000, failureRate: 0.03,
+        bandwidth: 2039, tdp: 400, arch: 'Ampere', memType: 'HBM2e',
+        tokPerSecPer70B: 850, source: 'NVIDIA Spec Sheet',
+        category: 'nvidia-ampere'
+      },
+      H100: {
+        memory: 80, name: 'H100 SXM', costPerYear: 25000, failureRate: 0.05,
+        bandwidth: 3350, tdp: 700, arch: 'Hopper', memType: 'HBM3',
+        tokPerSecPer70B: 2500, source: 'InferenceMax Oct 2025',
+        category: 'nvidia-hopper'
+      },
+      H200: {
+        memory: 141, name: 'H200 SXM', costPerYear: 30000, failureRate: 0.05,
+        bandwidth: 4800, tdp: 700, arch: 'Hopper', memType: 'HBM3e',
+        tokPerSecPer70B: 3500, source: 'InferenceMax Oct 2025',
+        category: 'nvidia-hopper'
+      },
+      B100: {
+        memory: 192, name: 'B100', costPerYear: 38000, failureRate: 0.08,
+        bandwidth: 8000, tdp: 700, arch: 'Blackwell', memType: 'HBM3e',
+        tokPerSecPer70B: 8000, source: 'NVIDIA Spec Sheet',
+        category: 'nvidia-blackwell'
+      },
+      B200: {
+        memory: 192, name: 'B200', costPerYear: 45000, failureRate: 0.10,
+        bandwidth: 8000, tdp: 1000, arch: 'Blackwell', memType: 'HBM3e',
+        tokPerSecPer70B: 10000, source: 'InferenceMax Oct 2025',
+        category: 'nvidia-blackwell'
+      },
+      B300: {
+        memory: 288, name: 'B300 (Blackwell Ultra)', costPerYear: 55000, failureRate: 0.10,
+        bandwidth: 8000, tdp: 1400, arch: 'Blackwell Ultra', memType: 'HBM3e',
+        tokPerSecPer70B: 12000, source: 'NVIDIA Spec Sheet',
+        category: 'nvidia-blackwell'
+      },
+      GB200: {
+        memory: 384, name: 'GB200 Superchip', costPerYear: 70000, failureRate: 0.12,
+        bandwidth: 16000, tdp: 2700, arch: 'Blackwell', memType: 'HBM3e',
+        tokPerSecPer70B: 18000, source: 'InferenceMax Oct 2025',
+        note: '2x B200 + Grace CPU',
+        category: 'nvidia-blackwell'
+      },
+      Rubin: {
+        memory: 288, name: 'Rubin GPU', costPerYear: 65000, failureRate: 0.08,
+        bandwidth: 22000, tdp: 1200, arch: 'Rubin', memType: 'HBM4',
+        tokPerSecPer70B: 50000, source: 'NVIDIA CES 2026',
+        note: '5x Blackwell inference perf',
+        available: '2H 2026',
+        category: 'nvidia-rubin'
+      },
+      RubinUltra: {
+        memory: 1024, name: 'Rubin Ultra', costPerYear: 120000, failureRate: 0.08,
+        bandwidth: 30000, tdp: 1800, arch: 'Rubin Ultra', memType: 'HBM4e',
+        tokPerSecPer70B: 100000, source: 'NVIDIA Roadmap 2027',
+        note: '4x reticle GPUs, 1TB HBM4e',
+        available: '2027',
+        category: 'nvidia-rubin'
+      },
+      RubinCPX: {
+        memory: 128, name: 'Rubin CPX (Prefill)', costPerYear: 25000, failureRate: 0.05,
+        bandwidth: 2000, tdp: 400, arch: 'Rubin CPX', memType: 'GDDR7',
+        tokPerSecPer70B: 30000, source: 'NVIDIA CES 2026',
+        note: 'Prefill accelerator, 3x attention vs GB300',
+        available: 'End 2026',
+        category: 'nvidia-rubin'
+      },
+      MI300X: {
+        memory: 192, name: 'AMD MI300X', costPerYear: 35000, failureRate: 0.06,
+        bandwidth: 5300, tdp: 750, arch: 'CDNA 3', memType: 'HBM3',
+        tokPerSecPer70B: 3000, source: 'AMD Data Sheet',
+        category: 'amd'
+      },
+      MI325X: {
+        memory: 256, name: 'AMD MI325X', costPerYear: 42000, failureRate: 0.07,
+        bandwidth: 6000, tdp: 750, arch: 'CDNA 3', memType: 'HBM3e',
+        tokPerSecPer70B: 4000, source: 'AMD Data Sheet',
+        category: 'amd'
+      },
+      MI355X: {
+        memory: 288, name: 'AMD MI355X', costPerYear: 50000, failureRate: 0.08,
+        bandwidth: 8000, tdp: 750, arch: 'CDNA 4', memType: 'HBM3e',
+        tokPerSecPer70B: 8500, source: 'InferenceMax Oct 2025',
+        note: '35x gen-over-gen on Llama 405B',
+        category: 'amd'
+      },
+    };
+
+    const GPU_CATEGORIES = {
+      'nvidia-ampere': { name: 'NVIDIA Ampere (Legacy)', color: '#76B900' },
+      'nvidia-hopper': { name: 'NVIDIA Hopper', color: '#76B900' },
+      'nvidia-blackwell': { name: 'NVIDIA Blackwell', color: '#76B900' },
+      'nvidia-rubin': { name: 'NVIDIA Vera Rubin (2026+)', color: '#76B900' },
+      'amd': { name: 'AMD Instinct', color: '#ED1C24' },
+    };
+
+    // Organization Size Presets (from GPU Scaling Document + NVIDIA Infrastructure Research)
+    const ORG_SIZES = {
+      startup: { name: 'Startup (10-100)', users: 50, concurrency: 30, haStrategy: 'warm', regions: 1, desc: 'Early-stage, cost-optimized', source: 'Industry patterns' },
+      smb: { name: 'SMB (100-500)', users: 250, concurrency: 25, haStrategy: 'activePassive', regions: 1, desc: 'Small/medium business', source: 'VMware Sizing Guide' },
+      enterprise: { name: 'Enterprise (500-2K)', users: 1000, concurrency: 20, haStrategy: 'activePassive', regions: 1, desc: 'Single-region enterprise', source: 'VMware Sizing Guide' },
+      globalEnt: { name: 'Global Enterprise (2K-10K)', users: 5000, concurrency: 18, haStrategy: 'activeActive', regions: 2, desc: 'Multi-region deployment', source: 'VMware Sizing Guide' },
+      neoCloud: {
+        name: 'Neo Cloud (NVIDIA AI Enterprise)',
+        users: 15000,
+        concurrency: 12,
+        haStrategy: 'activeActive',
+        regions: 2,
+        desc: 'NVIDIA AI Enterprise cloud-native platform',
+        source: 'NVIDIA AI Enterprise Docs',
+        note: 'Kubernetes-native, NIM microservices',
+        gpuRecommendation: 'H100/H200'
+      },
+      sovereignAI: {
+        name: 'Sovereign AI Cloud',
+        users: 50000,
+        concurrency: 10,
+        haStrategy: 'activeActive',
+        regions: 1,
+        desc: 'National/regional data sovereignty deployment',
+        source: 'NVIDIA Sovereign AI Initiative (2024-2025)',
+        note: 'Data residency, 100+ nations deploying',
+        gpuRecommendation: 'GB200 NVL72'
+      },
+      aiFactory: {
+        name: 'AI Factory (DGX SuperPOD)',
+        users: 100000,
+        concurrency: 8,
+        haStrategy: 'activeActive',
+        regions: 1,
+        desc: 'Full-scale AI factory with DGX SuperPOD',
+        source: 'NVIDIA DGX SuperPOD Architecture Guide',
+        note: '32-2000+ DGX nodes, 640 PFLOPS per SU',
+        gpuRecommendation: 'GB200 NVL72',
+        minGpus: 256
+      },
+      hyperscaler: {
+        name: 'Hyperscaler (AWS/Azure/GCP scale)',
+        users: 500000,
+        concurrency: 5,
+        haStrategy: 'activeActive',
+        regions: 3,
+        desc: 'Public cloud hyperscaler deployment',
+        source: 'Public cloud inference benchmarks',
+        note: '30-150kW/rack, 31K+ tok/s per H200 cluster',
+        gpuRecommendation: 'GB200 NVL72'
+      },
+    };
+
+    // Use Case Profiles (from GPU Scaling Document Section 1.2)
+    const PROFILES = {
+      general: {
+        name: 'General Enterprise',
+        short: 0.40, medium: 0.45, long: 0.12, extended: 0.03,
+        avgContext: 8000,
+        source: 'OpenRouter State of AI 2025',
+        desc: 'Mixed workloads, typical enterprise deployment'
+      },
+      chatbot: {
+        name: 'Chatbot / Customer Support',
+        short: 0.60, medium: 0.35, long: 0.04, extended: 0.01,
+        avgContext: 4000,
+        source: 'Fullview AI Stats 2025 (~3-5K tok/conversation)',
+        desc: 'E-commerce, support tickets, FAQ'
+      },
+      code: {
+        name: 'Code Assistant',
+        short: 0.20, medium: 0.40, long: 0.30, extended: 0.10,
+        avgContext: 18000,
+        source: 'OpenRouter - Programming 3-4x general avg',
+        desc: 'IDE copilots, code review, debugging'
+      },
+      rag: {
+        name: 'RAG Pipeline',
+        short: 0.30, medium: 0.55, long: 0.12, extended: 0.03,
+        avgContext: 9000,
+        source: 'Deepchecks, Agenta (3-8 chunks × 500-1500 tok)',
+        desc: 'Knowledge base retrieval, semantic search'
+      },
+      document: {
+        name: 'Document Analysis',
+        short: 0.10, medium: 0.30, long: 0.40, extended: 0.20,
+        avgContext: 35000,
+        source: 'Industry patterns - legal, financial docs',
+        desc: 'Contracts, reports, multi-doc synthesis'
+      },
+      agentic: {
+        name: 'Agentic / Multi-step',
+        short: 0.15, medium: 0.35, long: 0.35, extended: 0.15,
+        avgContext: 28000,
+        source: 'Claude Code, Devin-style agents',
+        desc: 'Tool use, planning, autonomous tasks'
+      },
+    };
+
+    // Model Size Tiers (from GPU Scaling Document)
+    const MODEL_SIZES = {
+      7: { name: '7B (Llama 3.2, Mistral)', tier: 1, desc: 'Edge/mobile, fast responses' },
+      13: { name: '13B (Llama 2 13B)', tier: 1, desc: 'Balanced small model' },
+      32: { name: '32B (Qwen 2.5 32B)', tier: 2, desc: 'Strong mid-tier' },
+      70: { name: '70B (Llama 3.3 70B)', tier: 2, desc: 'Enterprise standard', validated: true },
+      120: { name: '120B (Falcon 180B class)', tier: 3, desc: 'Large enterprise' },
+      405: { name: '405B (Llama 3.1 405B)', tier: 3, desc: 'Maximum open-source' },
+      671: { name: '671B (DeepSeek R1)', tier: 4, desc: 'Frontier reasoning', validated: true },
+      1000: { name: '1T+ (GPT-4/Claude class)', tier: 4, desc: 'Frontier proprietary estimate' },
+    };
+
+    const CONTEXT_TIERS = {
+      short: { name: 'Short (1-4K)', avgTokens: 2500 },
+      medium: { name: 'Medium (4-16K)', avgTokens: 10000 },
+      long: { name: 'Long (16-64K)', avgTokens: 40000 },
+      extended: { name: 'Extended (64K+)', avgTokens: 96000 },
+    };
+
+    const HA_STRATEGIES = {
+      none: { name: 'None (Dev/Test)', multiplier: 1.0, failoverTime: 'N/A' },
+      cold: { name: 'Cold Standby', multiplier: 1.1, failoverTime: 'Hours' },
+      warm: { name: 'Warm Standby', multiplier: 1.5, failoverTime: '15-30 min' },
+      activePassive: { name: 'Active-Passive HA', multiplier: 2.0, failoverTime: '1-5 min' },
+      activeActive: { name: 'Active-Active HA', multiplier: 2.0, failoverTime: 'Seconds' },
+    };
+
+    const QOS_LEVELS = {
+      degraded: { name: 'Degraded', tokPerSec: 20, multiplier: 0.8 },
+      acceptable: { name: 'Acceptable', tokPerSec: 40, multiplier: 1.0 },
+      good: { name: 'Good', tokPerSec: 60, multiplier: 1.3 },
+      excellent: { name: 'Excellent', tokPerSec: 100, multiplier: 1.8 },
+      premium: { name: 'Premium', tokPerSec: 150, multiplier: 2.2 },
+    };
+
+    const INFERENCEMAX_DATA = {
+      lastUpdated: '2026-01-14',
+      dashboardUrl: 'https://inferencemax.semianalysis.com',
+      throughput_70B: {
+        H100: { tokPerSec: 2500, lastBenchmark: '2026-01-13' },
+        H200: { tokPerSec: 3500, lastBenchmark: '2026-01-13' },
+        B200: { tokPerSec: 10000, lastBenchmark: '2026-01-13' },
+        GB200: { tokPerSec: 18000, lastBenchmark: '2026-01-13' },
+        MI300X: { tokPerSec: 3000, lastBenchmark: '2026-01-13' },
+        MI325X: { tokPerSec: 4000, lastBenchmark: '2026-01-13' },
+        MI355X: { tokPerSec: 8500, lastBenchmark: '2026-01-13' },
+      },
+      costPerMillion: {
+        H100: 2.10, H200: 1.56, B200: 0.25, GB200: 0.10, MI300X: 1.80, MI355X: 0.30,
+      },
+      powerEfficiencyVsH100: {
+        H200: 1.3, B200: 3.0, GB200: 3.9, MI300X: 1.2, MI355X: 2.8,
+      },
+      citation: 'SemiAnalysis InferenceMax™ (2025-2026)',
+    };
+
+    // Cited Sources with URLs
+    const SOURCES = [
+      { name: 'InferenceMax (SemiAnalysis)', url: 'https://inferencemax.semianalysis.com', desc: 'Nightly GPU benchmarks: B200 10K tok/s, GB200 15x lower cost vs H200', category: 'benchmark' },
+      { name: 'NVIDIA Vera Rubin NVL72', url: 'https://www.nvidia.com/en-us/data-center/vera-rubin-nvl72/', desc: '72 Rubin GPUs, 288GB HBM4 each, 5x Blackwell inference (CES 2026)', category: 'hardware' },
+      { name: 'NVIDIA Rubin CPX Blog', url: 'https://developer.nvidia.com/blog/nvidia-rubin-cpx/', desc: '128GB GDDR7, 3x attention vs GB300, optimized for 1M+ token contexts', category: 'hardware' },
+      { name: 'AMD MI350 Series', url: 'https://www.amd.com/en/products/accelerators/instinct/mi350.html', desc: 'MI355X: 288GB HBM3e, 8TB/s, 35x gen-over-gen on Llama 405B', category: 'hardware' },
+      { name: 'GPU Reliability Study (arXiv)', url: 'https://arxiv.org/html/2503.11901v4', desc: 'H100 3.2x lower MTBE vs A100; 5% overprovisioning recommended', category: 'research' },
+      { name: 'OpenRouter State of AI', url: 'https://openrouter.ai/state-of-ai', desc: '100T token study - avg sequence ~5,400 tokens (2025)', category: 'benchmark' },
+      { name: 'VMware Sizing Guide', url: 'https://blogs.vmware.com/cloud-foundation/2024/09/25/llm-inference-sizing/', desc: 'Enterprise concurrency 10-30 requests', category: 'sizing' },
+      { name: 'NVIDIA Technical Blog', url: 'https://developer.nvidia.com/blog/accelerate-large-scale-llm-inference/', desc: 'KV cache: 128K context = ~40GB for Llama 70B', category: 'research' },
+      { name: 'Anyscale LLM Numbers', url: 'https://www.anyscale.com/blog/num-every-llm-developer-should-know', desc: '~1MB per token, ~2.5MB for 70B with GQA', category: 'research' },
+      { name: 'BentoML GPU Guide', url: 'https://www.bentoml.com/blog/nvidia-data-center-gpus-explained', desc: 'A100→H100→H200→B200 comparison and specifications', category: 'hardware' },
+      // Sovereign AI & Infrastructure Sources
+      { name: 'NVIDIA Sovereign AI Initiative', url: 'https://www.nvidia.com/en-us/industries/sovereign-ai/', desc: '100+ nations building domestic AI clouds for data sovereignty (2024-2025)', category: 'infrastructure' },
+      { name: 'NVIDIA DGX SuperPOD', url: 'https://www.nvidia.com/en-us/data-center/dgx-superpod/', desc: '32 DGX H100 per Scalable Unit (SU), 640 PFLOPS FP8, scales to 2000+ nodes', category: 'infrastructure' },
+      { name: 'NVIDIA GB200 NVL72 Rack', url: 'https://www.nvidia.com/en-us/data-center/gb200-nvl72/', desc: '72 Blackwell GPUs, 120kW liquid-cooled, 30x inference vs H100', category: 'infrastructure' },
+      { name: 'NVIDIA AI Enterprise Platform', url: 'https://www.nvidia.com/en-us/data-center/products/ai-enterprise/', desc: 'Cloud-native AI with NIM microservices, Kubernetes-native deployment', category: 'infrastructure' },
+      { name: 'Hyperscaler Inference Study', url: 'https://www.nextplatform.com/2024/12/11/the-inference-boom-is-underway/', desc: 'Inference workloads 30-150kW/rack, H200 achieves 31K tok/s on Llama 70B', category: 'benchmark' },
+    ];
+
+    // Components
+    function SourceBadge({ source }) {
+      return (
+        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ml-1"
+          style={{ backgroundColor: `${F5_COLORS.primary.lightBlue}20`, color: F5_COLORS.primary.blue }}>
+          {source}
+        </span>
+      );
+    }
+
+    function InferenceMaxPanel({ gpuType }) {
+      const gpuData = INFERENCEMAX_DATA.throughput_70B[gpuType];
+      const costData = INFERENCEMAX_DATA.costPerMillion[gpuType];
+      const efficiencyData = INFERENCEMAX_DATA.powerEfficiencyVsH100[gpuType];
+      if (!gpuData) return null;
+
+      return (
+        <div className="rounded-lg p-3 mb-4 border" style={{ backgroundColor: '#1a1a2e', borderColor: '#4a4a6a', color: '#e0e0e0' }}>
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold" style={{ color: '#00d4ff' }}>📊 InferenceMax Benchmark Data</span>
+              <span className="text-xs px-2 py-0.5 rounded" style={{ backgroundColor: '#00d4ff20', color: '#00d4ff' }}>LIVE</span>
+            </div>
+            <a href={INFERENCEMAX_DATA.dashboardUrl} target="_blank" rel="noopener noreferrer" className="text-xs hover:underline" style={{ color: '#00d4ff' }}>
+              View Dashboard →
+            </a>
+          </div>
+          <div className="grid grid-cols-3 gap-3 text-sm">
+            <div>
+              <div className="text-xs" style={{ color: '#888' }}>Throughput (70B)</div>
+              <div className="font-mono font-bold" style={{ color: '#4ade80' }}>{gpuData.tokPerSec.toLocaleString()} tok/s</div>
+            </div>
+            {costData && (
+              <div>
+                <div className="text-xs" style={{ color: '#888' }}>Cost/M Tokens</div>
+                <div className="font-mono font-bold" style={{ color: '#fbbf24' }}>${costData.toFixed(2)}</div>
+              </div>
+            )}
+            {efficiencyData && (
+              <div>
+                <div className="text-xs" style={{ color: '#888' }}>vs H100 Efficiency</div>
+                <div className="font-mono font-bold" style={{ color: '#a78bfa' }}>{efficiencyData.toFixed(1)}x</div>
+              </div>
+            )}
+          </div>
+          <div className="mt-2 pt-2 border-t text-xs" style={{ borderColor: '#4a4a6a', color: '#888' }}>
+            Source: <a href={INFERENCEMAX_DATA.dashboardUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#00d4ff' }}>
+              {INFERENCEMAX_DATA.citation}
+            </a>
+          </div>
+        </div>
+      );
+    }
+
+    function Section({ title, children, defaultOpen = true }) {
+      const [open, setOpen] = useState(defaultOpen);
+      return (
+        <div className="rounded-lg shadow-md mb-4 overflow-hidden" style={{ backgroundColor: F5_COLORS.neutral.white }}>
+          <button onClick={() => setOpen(!open)} className="w-full px-4 py-3 flex items-center justify-between text-white"
+            style={{ backgroundColor: F5_COLORS.primary.blue }}>
+            <span className="font-semibold">{title}</span>
+            <span>{open ? '▲' : '▼'}</span>
+          </button>
+          {open && <div className="p-4">{children}</div>}
+        </div>
+      );
+    }
+
+    function ResultCard({ label, value, subtext, colorType = 'red', large = false }) {
+      const colorMap = {
+        red: F5_COLORS.primary.red,
+        blue: F5_COLORS.primary.blue,
+        green: F5_COLORS.secondary.green,
+        orange: F5_COLORS.primary.orange,
+        lightBlue: F5_COLORS.primary.lightBlue,
+      };
+      return (
+        <div className="rounded-lg p-4 text-white" style={{ backgroundColor: colorMap[colorType] || F5_COLORS.primary.red }}>
+          <div className="text-sm opacity-90">{label}</div>
+          <div className={`font-bold ${large ? 'text-3xl' : 'text-2xl'}`}>{value}</div>
+          {subtext && <div className="text-xs opacity-75 mt-1">{subtext}</div>}
+        </div>
+      );
+    }
+
+    function GPUCalculator() {
+      const [orgSize, setOrgSize] = useState('smb');
+      const [totalUsers, setTotalUsers] = useState(250);
+      const [concurrencyRate, setConcurrencyRate] = useState(25);
+      const [profile, setProfile] = useState('general');
+      const [modelSize, setModelSize] = useState(70);
+      const [precision, setPrecision] = useState('fp8');
+      const [qosLevel, setQosLevel] = useState('good');
+      const [haStrategy, setHaStrategy] = useState('activePassive');
+      const [regions, setRegions] = useState(1);
+      const [gpuType, setGpuType] = useState('B200');
+      const [burstHeadroom, setBurstHeadroom] = useState(25);
+
+      const [showCalcs, setShowCalcs] = useState(true);
+      const [showSources, setShowSources] = useState(false);
+      const [showDpuMethodology, setShowDpuMethodology] = useState(false);
+
+      // Apply org size preset
+      const applyOrgPreset = (preset) => {
+        const org = ORG_SIZES[preset];
+        setOrgSize(preset);
+        setTotalUsers(org.users);
+        setConcurrencyRate(org.concurrency);
+        setHaStrategy(org.haStrategy);
+        setRegions(org.regions);
+      };
+
+      const results = useMemo(() => {
+        const activeUsers = Math.ceil(totalUsers * (concurrencyRate / 100));
+        const selectedProfile = PROFILES[profile];
+        const dist = { short: selectedProfile.short, medium: selectedProfile.medium, long: selectedProfile.long, extended: selectedProfile.extended };
+
+        const usersByTier = {
+          short: Math.ceil(activeUsers * dist.short),
+          medium: Math.ceil(activeUsers * dist.medium),
+          long: Math.ceil(activeUsers * dist.long),
+          extended: Math.ceil(activeUsers * dist.extended),
+        };
+
+        const precisionMultiplier = precision === 'fp16' ? 1 : precision === 'fp8' ? 0.5 : 0.25;
+        const kvPerTokenMB = 2.5 * precisionMultiplier;
+        const modelScaleFactor = modelSize / 70;
+        const scaledKvPerTokenMB = kvPerTokenMB * modelScaleFactor;
+
+        const kvByTier = {
+          short: usersByTier.short * CONTEXT_TIERS.short.avgTokens * scaledKvPerTokenMB / 1024,
+          medium: usersByTier.medium * CONTEXT_TIERS.medium.avgTokens * scaledKvPerTokenMB / 1024,
+          long: usersByTier.long * CONTEXT_TIERS.long.avgTokens * scaledKvPerTokenMB / 1024,
+          extended: usersByTier.extended * CONTEXT_TIERS.extended.avgTokens * scaledKvPerTokenMB / 1024,
+        };
+
+        const totalKvCache = kvByTier.short + kvByTier.medium + kvByTier.long + kvByTier.extended;
+        const bytesPerParam = precision === 'fp16' ? 2 : precision === 'fp8' ? 1 : 0.5;
+        const modelWeights = modelSize * bytesPerParam;
+        const activations = modelWeights * 0.12;
+        const subtotal = modelWeights + totalKvCache + activations;
+        const withHeadroom = subtotal * (1 + burstHeadroom / 100);
+        const qosMultiplier = QOS_LEVELS[qosLevel].multiplier;
+        const withQos = withHeadroom * qosMultiplier;
+        const gpuMemory = GPU_SPECS[gpuType].memory;
+        const baseGpus = Math.ceil(withQos / gpuMemory);
+        const spares = baseGpus <= 8 ? 1 : baseGpus <= 16 ? 2 : Math.ceil(baseGpus * 0.125);
+        const withRedundancy = baseGpus + spares;
+        const haMultiplier = HA_STRATEGIES[haStrategy].multiplier;
+        const withHa = Math.ceil(withRedundancy * haMultiplier);
+        const totalGpus = withHa * regions;
+        const annualCost = totalGpus * GPU_SPECS[gpuType].costPerYear;
+
+        // DPU Value calculation based on Model Tier × Scale × Context (from GPU Scaling Document Section 7)
+        // DPU adds value when there's network complexity from: large clusters, multi-region, HA failover, high context
+        const modelTier = MODEL_SIZES[modelSize]?.tier || 2;
+        const scaleLevel = totalGpus <= 4 ? 'A' : totalGpus <= 16 ? 'B' : totalGpus <= 64 ? 'C' : totalGpus <= 256 ? 'D' : 'E';
+        const contextLevel = selectedProfile.avgContext < 4000 ? 1 : selectedProfile.avgContext < 16000 ? 2 : selectedProfile.avgContext < 64000 ? 3 : 4;
+
+        // DPU score calculation - weighted by actual network complexity
+        // Scale contributes more heavily as it directly affects network traffic
+        const scaleScore = scaleLevel === 'A' ? 0 : scaleLevel === 'B' ? 1 : scaleLevel === 'C' ? 3 : scaleLevel === 'D' ? 5 : 7;
+        const haScore = haStrategy === 'none' ? 0 : haStrategy === 'cold' ? 0 : haStrategy === 'warm' ? 1 : haStrategy === 'activePassive' ? 2 : 3;
+        const regionScore = (regions - 1) * 2; // Multi-region adds significant DPU value
+        const dpuScore = scaleScore + haScore + regionScore + (contextLevel > 2 ? 1 : 0);
+
+        // DPU value thresholds - based on actual network optimization benefit
+        let dpuValue = 'Low';
+        if (dpuScore >= 10 || (regions >= 3 && totalGpus >= 32)) dpuValue = 'Essential';
+        else if (dpuScore >= 7 || (regions >= 2 && totalGpus >= 16)) dpuValue = 'Critical';
+        else if (dpuScore >= 5 || (haStrategy === 'activeActive' && totalGpus >= 8)) dpuValue = 'Very High';
+        else if (dpuScore >= 3 || totalGpus >= 16) dpuValue = 'High';
+        else if (dpuScore >= 1 || totalGpus >= 8) dpuValue = 'Moderate';
+
+        return {
+          activeUsers, totalGpus, annualCost, dpuValue, gpuMemory, baseGpus, withRedundancy, withHa,
+          // Full calculation breakdown
+          usersByTier, kvByTier, totalKvCache, modelWeights, activations, subtotal, withHeadroom, withQos,
+          precisionMultiplier, scaledKvPerTokenMB, bytesPerParam, qosMultiplier, haMultiplier, spares,
+          // DPU analysis
+          modelTier, scaleLevel, contextLevel, dpuScore
+        };
+      }, [totalUsers, concurrencyRate, profile, modelSize, precision, qosLevel, haStrategy, regions, gpuType, burstHeadroom]);
+
+      return (
+        <div className="min-h-screen p-4" style={{ backgroundColor: F5_COLORS.neutral.lightGray }}>
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="rounded-lg shadow-lg p-6 mb-6 text-white relative overflow-hidden" style={{ backgroundColor: F5_COLORS.primary.red }}>
+              <div className="absolute top-4 right-4">
+                <span className="text-2xl font-bold">F5</span>
+              </div>
+              <h1 className="text-2xl font-bold mb-2">🖥️ GPU Provisioning Calculator</h1>
+              <p className="opacity-90">Realistic GPU sizing with full calculation transparency and cited sources</p>
+              <div className="absolute bottom-0 left-0 right-0 h-1" style={{ background: `linear-gradient(to right, ${F5_COLORS.primary.orange}, ${F5_COLORS.secondary.yellow}, ${F5_COLORS.primary.lightBlue})` }} />
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Input Panel */}
+              <div className="lg:col-span-1">
+                <Section title="🏢 Organization Size">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Quick Preset</label>
+                      <div className="text-xs text-gray-500 mb-2">Select deployment scale (sources cited)</div>
+                      <div className="grid grid-cols-1 gap-2 max-h-96 overflow-y-auto pr-1">
+                        {Object.entries(ORG_SIZES).map(([key, org]) => (
+                          <button key={key} onClick={() => applyOrgPreset(key)}
+                            className={`text-left px-3 py-2 rounded-lg border text-sm transition-all ${orgSize === key ? 'ring-2' : ''}`}
+                            style={{
+                              borderColor: orgSize === key ? F5_COLORS.primary.red : F5_COLORS.neutral.mediumGray,
+                              backgroundColor: orgSize === key ? `${F5_COLORS.primary.red}10` : 'white',
+                              ringColor: F5_COLORS.primary.red
+                            }}>
+                            <div className="font-medium">{org.name}</div>
+                            <div className="text-xs text-gray-500">{org.desc}</div>
+                            {org.note && <div className="text-xs mt-0.5" style={{ color: F5_COLORS.primary.lightBlue }}>⚡ {org.note}</div>}
+                            <div className="text-xs mt-0.5 opacity-60">
+                              {org.users.toLocaleString()} users • {org.concurrency}% concurrency
+                              {org.source && <span className="ml-1">• [{org.source}]</span>}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="border-t pt-3" style={{ borderColor: F5_COLORS.neutral.mediumGray }}>
+                      <label className="block text-sm font-medium mb-1">Custom Users</label>
+                      <input type="number" value={totalUsers} onChange={(e) => setTotalUsers(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-full px-3 py-2 border rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Peak Concurrency: {concurrencyRate}%</label>
+                      <input type="range" min="5" max="100" value={concurrencyRate} onChange={(e) => setConcurrencyRate(parseInt(e.target.value))}
+                        className="w-full" style={{ accentColor: F5_COLORS.primary.red }} />
+                      <div className="text-xs text-gray-500">Enterprise typical: 10-30% (VMware Sizing Guide)</div>
+                    </div>
+                  </div>
+                </Section>
+
+                <Section title="💼 Use Case Profile">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Workload Type</label>
+                      <select value={profile} onChange={(e) => setProfile(e.target.value)} className="w-full px-3 py-2 border rounded-lg">
+                        {Object.entries(PROFILES).map(([key, p]) => (
+                          <option key={key} value={key}>{p.name}</option>
+                        ))}
+                      </select>
+                      <div className="text-xs text-gray-500 mt-1">{PROFILES[profile].desc}</div>
+                      <div className="text-xs mt-1" style={{ color: F5_COLORS.primary.lightBlue }}>
+                        📊 Avg context: {(PROFILES[profile].avgContext/1000).toFixed(0)}K tokens
+                      </div>
+                    </div>
+                    <div className="p-2 rounded text-xs" style={{ backgroundColor: `${F5_COLORS.primary.blue}10` }}>
+                      <div className="font-medium mb-1">Context Distribution:</div>
+                      <div className="grid grid-cols-2 gap-1">
+                        <div>Short (1-4K): {(PROFILES[profile].short*100).toFixed(0)}%</div>
+                        <div>Medium (4-16K): {(PROFILES[profile].medium*100).toFixed(0)}%</div>
+                        <div>Long (16-64K): {(PROFILES[profile].long*100).toFixed(0)}%</div>
+                        <div>Extended (64K+): {(PROFILES[profile].extended*100).toFixed(0)}%</div>
+                      </div>
+                      <div className="text-xs mt-1 opacity-75">Source: {PROFILES[profile].source}</div>
+                    </div>
+                  </div>
+                </Section>
+
+                <Section title="🧠 Model Configuration">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Model Size</label>
+                      <select value={modelSize} onChange={(e) => setModelSize(parseInt(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        <optgroup label="Tier 1 - Small (Edge/Fast)">
+                          <option value={7}>{MODEL_SIZES[7].name}</option>
+                          <option value={13}>{MODEL_SIZES[13].name}</option>
+                        </optgroup>
+                        <optgroup label="Tier 2 - Medium (Enterprise)">
+                          <option value={32}>{MODEL_SIZES[32].name}</option>
+                          <option value={70}>{MODEL_SIZES[70].name} ✓</option>
+                        </optgroup>
+                        <optgroup label="Tier 3 - Large (Advanced)">
+                          <option value={120}>{MODEL_SIZES[120].name}</option>
+                          <option value={405}>{MODEL_SIZES[405].name}</option>
+                        </optgroup>
+                        <optgroup label="Tier 4 - Frontier (Maximum)">
+                          <option value={671}>{MODEL_SIZES[671].name} ✓</option>
+                          <option value={1000}>{MODEL_SIZES[1000].name}</option>
+                        </optgroup>
+                      </select>
+                      <div className="text-xs text-gray-500 mt-1">{MODEL_SIZES[modelSize].desc}</div>
+                      {MODEL_SIZES[modelSize].validated && (
+                        <div className="text-xs mt-1" style={{ color: F5_COLORS.secondary.green }}>✓ InferenceMax Validated</div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Precision</label>
+                      <select value={precision} onChange={(e) => setPrecision(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        <option value="fp16">FP16 (Full precision)</option>
+                        <option value="fp8">FP8 (Recommended for Blackwell)</option>
+                        <option value="fp4">FP4 (2-3x throughput on B200)</option>
+                      </select>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {precision === 'fp4' && '⚡ FP4: 2-3x throughput + 50% KV cache reduction (InferenceMax)'}
+                        {precision === 'fp8' && '⚡ FP8: Standard for modern inference'}
+                        {precision === 'fp16' && '⚡ FP16: Maximum quality, highest memory'}
+                      </div>
+                    </div>
+                  </div>
+                </Section>
+
+                <Section title="🖥️ Infrastructure">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">GPU Type</label>
+                      <select value={gpuType} onChange={(e) => setGpuType(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        {Object.entries(GPU_CATEGORIES).map(([catKey, cat]) => (
+                          <optgroup key={catKey} label={cat.name}>
+                            {Object.entries(GPU_SPECS).filter(([_, gpu]) => gpu.category === catKey).map(([key, gpu]) => (
+                              <option key={key} value={key}>
+                                {gpu.name} ({gpu.memory}GB, {gpu.memType}){gpu.available ? ` [${gpu.available}]` : ''}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">QoS Target</label>
+                      <select value={qosLevel} onChange={(e) => setQosLevel(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        {Object.entries(QOS_LEVELS).map(([key, level]) => (
+                          <option key={key} value={key}>{level.name} ({level.tokPerSec} tok/s)</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">HA Strategy</label>
+                      <select value={haStrategy} onChange={(e) => setHaStrategy(e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm">
+                        {Object.entries(HA_STRATEGIES).map(([key, s]) => (
+                          <option key={key} value={key}>{s.name} ({s.multiplier}x)</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Regions</label>
+                        <select value={regions} onChange={(e) => setRegions(parseInt(e.target.value))} className="w-full px-3 py-2 border rounded-lg text-sm">
+                          <option value={1}>1 Region</option>
+                          <option value={2}>2 Regions</option>
+                          <option value={3}>3 Regions</option>
+                          <option value={4}>4 Regions (Global)</option>
+                          <option value={5}>5+ Regions (Hyperscale)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium mb-1">Headroom: {burstHeadroom}%</label>
+                        <input type="range" min="0" max="50" value={burstHeadroom} onChange={(e) => setBurstHeadroom(parseInt(e.target.value))}
+                          className="w-full" style={{ accentColor: F5_COLORS.primary.red }} />
+                      </div>
+                    </div>
+                  </div>
+                </Section>
+              </div>
+
+              {/* Results */}
+              <div className="lg:col-span-2">
+                {/* GPU Specs Panel */}
+                <div className="rounded-lg p-4 mb-4 border" style={{ backgroundColor: F5_COLORS.neutral.white, borderColor: F5_COLORS.neutral.mediumGray }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold" style={{ color: F5_COLORS.primary.blue }}>{GPU_SPECS[gpuType].name} Specifications</h3>
+                    <span className="text-xs px-2 py-1 rounded" style={{
+                      backgroundColor: GPU_SPECS[gpuType].category.includes('nvidia') ? '#76B90020' : '#ED1C2420',
+                      color: GPU_SPECS[gpuType].category.includes('nvidia') ? '#76B900' : '#ED1C24'
+                    }}>{GPU_SPECS[gpuType].arch}</span>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div><span className="text-gray-500">Memory:</span> <span className="font-medium">{GPU_SPECS[gpuType].memory}GB {GPU_SPECS[gpuType].memType}</span></div>
+                    <div><span className="text-gray-500">Bandwidth:</span> <span className="font-medium">{(GPU_SPECS[gpuType].bandwidth / 1000).toFixed(1)} TB/s</span></div>
+                    <div><span className="text-gray-500">TDP:</span> <span className="font-medium">{GPU_SPECS[gpuType].tdp}W</span></div>
+                    <div><span className="text-gray-500">Failure Rate:</span> <span className="font-medium">{(GPU_SPECS[gpuType].failureRate * 100).toFixed(1)}%</span></div>
+                  </div>
+                  {GPU_SPECS[gpuType].note && <div className="mt-2 text-xs" style={{ color: F5_COLORS.primary.orange }}>⚡ {GPU_SPECS[gpuType].note}</div>}
+                  {GPU_SPECS[gpuType].available && <div className="mt-1 text-xs" style={{ color: F5_COLORS.primary.lightBlue }}>📅 Available: {GPU_SPECS[gpuType].available}</div>}
+                </div>
+
+                {/* InferenceMax Panel */}
+                <InferenceMaxPanel gpuType={gpuType} />
+
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  <ResultCard label="Total GPUs" value={`${results.totalGpus}x`} subtext={GPU_SPECS[gpuType].name} colorType="red" large />
+                  <ResultCard label="Annual Cost" value={`$${(results.annualCost/1000000).toFixed(2)}M`} subtext="cloud estimate" colorType="green" large />
+                  <ResultCard label="Active Users" value={results.activeUsers} subtext={`of ${totalUsers}`} colorType="blue" />
+                  <ResultCard
+                    label="DPU Value"
+                    value={results.dpuValue}
+                    subtext={`Score: ${results.dpuScore} (${results.totalGpus} GPUs, ${regions}R)`}
+                    colorType={results.dpuValue === 'Essential' ? 'red' : results.dpuValue === 'Critical' ? 'orange' : 'lightBlue'}
+                  />
+                </div>
+
+                {/* Full Calculation Transparency Section */}
+                <div className="rounded-lg shadow-md mb-4 overflow-hidden" style={{ backgroundColor: F5_COLORS.neutral.white }}>
+                  <button onClick={() => setShowCalcs(!showCalcs)}
+                    className="w-full px-4 py-3 flex items-center justify-between text-white"
+                    style={{ backgroundColor: F5_COLORS.primary.blue }}>
+                    <span className="font-semibold">📐 Full Calculation Transparency</span>
+                    <span>{showCalcs ? '▲' : '▼'}</span>
+                  </button>
+                  {showCalcs && (
+                    <div className="p-4 space-y-4 text-sm">
+                      {/* Step 1: Active Users */}
+                      <div className="border-l-4 pl-3" style={{ borderColor: F5_COLORS.primary.red }}>
+                        <div className="font-bold" style={{ color: F5_COLORS.primary.red }}>Step 1: Active Concurrent Users</div>
+                        <div className="font-mono bg-gray-100 p-2 rounded mt-1">
+                          {totalUsers} users × {concurrencyRate}% concurrency = <strong>{results.activeUsers} active users</strong>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">Source: VMware Sizing Guide - Enterprise typically 10-30%</div>
+                      </div>
+
+                      {/* Step 2: User Distribution */}
+                      <div className="border-l-4 pl-3" style={{ borderColor: F5_COLORS.primary.orange }}>
+                        <div className="font-bold" style={{ color: F5_COLORS.primary.orange }}>Step 2: Context Distribution ({PROFILES[profile].name})</div>
+                        <div className="font-mono bg-gray-100 p-2 rounded mt-1 grid grid-cols-2 gap-2">
+                          <div>Short (1-4K): {results.usersByTier.short} users × 2.5K avg</div>
+                          <div>Medium (4-16K): {results.usersByTier.medium} users × 10K avg</div>
+                          <div>Long (16-64K): {results.usersByTier.long} users × 40K avg</div>
+                          <div>Extended (64K+): {results.usersByTier.extended} users × 96K avg</div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">Source: {PROFILES[profile].source}</div>
+                      </div>
+
+                      {/* Step 3: KV Cache */}
+                      <div className="border-l-4 pl-3" style={{ borderColor: F5_COLORS.secondary.yellow }}>
+                        <div className="font-bold" style={{ color: '#B8860B' }}>Step 3: KV Cache Memory</div>
+                        <div className="font-mono bg-gray-100 p-2 rounded mt-1">
+                          <div>Base KV: 2.5 MB/token × {results.precisionMultiplier} ({precision}) × {modelSize}/70 scale = {results.scaledKvPerTokenMB.toFixed(3)} MB/token</div>
+                          <div className="mt-1 grid grid-cols-2 gap-1">
+                            <div>Short tier: {results.kvByTier.short.toFixed(1)} GB</div>
+                            <div>Medium tier: {results.kvByTier.medium.toFixed(1)} GB</div>
+                            <div>Long tier: {results.kvByTier.long.toFixed(1)} GB</div>
+                            <div>Extended tier: {results.kvByTier.extended.toFixed(1)} GB</div>
+                          </div>
+                          <div className="mt-1 font-bold">Total KV Cache: {results.totalKvCache.toFixed(1)} GB</div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">Source: Anyscale LLM Numbers - ~2.5MB for 70B with GQA</div>
+                      </div>
+
+                      {/* Step 4: Total Memory */}
+                      <div className="border-l-4 pl-3" style={{ borderColor: F5_COLORS.secondary.green }}>
+                        <div className="font-bold" style={{ color: F5_COLORS.secondary.green }}>Step 4: Total Memory Required</div>
+                        <div className="font-mono bg-gray-100 p-2 rounded mt-1">
+                          <div>Model Weights: {modelSize}B × {results.bytesPerParam} bytes = <strong>{results.modelWeights.toFixed(1)} GB</strong></div>
+                          <div>KV Cache: <strong>{results.totalKvCache.toFixed(1)} GB</strong></div>
+                          <div>Activations (~12%): <strong>{results.activations.toFixed(1)} GB</strong></div>
+                          <div className="border-t mt-1 pt-1">Subtotal: {results.subtotal.toFixed(1)} GB</div>
+                          <div>+ {burstHeadroom}% headroom = {results.withHeadroom.toFixed(1)} GB</div>
+                          <div>× {results.qosMultiplier}x QoS ({QOS_LEVELS[qosLevel].name}) = <strong>{results.withQos.toFixed(1)} GB</strong></div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">Source: NVIDIA Technical Blog - KV cache scaling</div>
+                      </div>
+
+                      {/* Step 5: GPU Count */}
+                      <div className="border-l-4 pl-3" style={{ borderColor: F5_COLORS.primary.lightBlue }}>
+                        <div className="font-bold" style={{ color: F5_COLORS.primary.lightBlue }}>Step 5: GPU Provisioning</div>
+                        <div className="font-mono bg-gray-100 p-2 rounded mt-1">
+                          <div>Base GPUs: {results.withQos.toFixed(1)} GB ÷ {results.gpuMemory} GB/GPU = <strong>{results.baseGpus}x {GPU_SPECS[gpuType].name}</strong></div>
+                          <div>+ N+{results.spares} redundancy = {results.withRedundancy}x GPUs</div>
+                          <div>× {results.haMultiplier}x HA ({HA_STRATEGIES[haStrategy].name}) = {results.withHa}x GPUs</div>
+                          <div>× {regions} region(s) = <strong className="text-lg">{results.totalGpus}x GPUs TOTAL</strong></div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">Source: GPU Reliability Study (arXiv) - 5% overprovisioning recommended</div>
+                      </div>
+
+                      {/* Final Result */}
+                      <div className="rounded-lg p-3 border-2" style={{ backgroundColor: `${F5_COLORS.primary.red}10`, borderColor: F5_COLORS.primary.red }}>
+                        <div className="grid grid-cols-3 gap-4 text-center">
+                          <div>
+                            <div className="text-xs text-gray-600">Total GPUs</div>
+                            <div className="text-2xl font-bold" style={{ color: F5_COLORS.primary.red }}>{results.totalGpus}x</div>
+                            <div className="text-xs">{GPU_SPECS[gpuType].name}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600">Total Memory</div>
+                            <div className="text-2xl font-bold" style={{ color: F5_COLORS.primary.blue }}>{results.totalGpus * results.gpuMemory} GB</div>
+                            <div className="text-xs">{GPU_SPECS[gpuType].memType}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600">Annual Cost</div>
+                            <div className="text-2xl font-bold" style={{ color: F5_COLORS.secondary.green }}>${(results.annualCost/1000000).toFixed(2)}M</div>
+                            <div className="text-xs">cloud estimate</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Sources Section */}
+                <div className="rounded-lg shadow-md mb-4 overflow-hidden" style={{ backgroundColor: F5_COLORS.neutral.white }}>
+                  <button onClick={() => setShowSources(!showSources)}
+                    className="w-full px-4 py-3 flex items-center justify-between text-white"
+                    style={{ backgroundColor: F5_COLORS.primary.orange }}>
+                    <span className="font-semibold">📚 Data Sources & Citations</span>
+                    <span>{showSources ? '▲' : '▼'}</span>
+                  </button>
+                  {showSources && (
+                    <div className="p-4">
+                      {/* Infrastructure Sources - Sovereign AI, AI Factory, etc. */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.red }}>🏗️ Infrastructure & Scale Sources</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {SOURCES.filter(s => s.category === 'infrastructure').map((source, i) => (
+                            <a key={i} href={source.url} target="_blank" rel="noopener noreferrer"
+                              className="block p-2 rounded-lg border hover:shadow-md transition-shadow"
+                              style={{ borderColor: F5_COLORS.primary.red + '40', backgroundColor: F5_COLORS.primary.red + '08' }}>
+                              <div className="font-semibold text-xs" style={{ color: F5_COLORS.primary.red }}>{source.name} ↗</div>
+                              <div className="text-xs text-gray-600 mt-0.5">{source.desc}</div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Benchmark Sources */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.lightBlue }}>📊 Benchmark & Performance Sources</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {SOURCES.filter(s => s.category === 'benchmark').map((source, i) => (
+                            <a key={i} href={source.url} target="_blank" rel="noopener noreferrer"
+                              className="block p-2 rounded-lg border hover:shadow-md transition-shadow"
+                              style={{ borderColor: F5_COLORS.primary.lightBlue + '40', backgroundColor: F5_COLORS.primary.lightBlue + '08' }}>
+                              <div className="font-semibold text-xs" style={{ color: F5_COLORS.primary.lightBlue }}>{source.name} ↗</div>
+                              <div className="text-xs text-gray-600 mt-0.5">{source.desc}</div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Hardware Sources */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.secondary.green }}>🖥️ Hardware Specifications</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {SOURCES.filter(s => s.category === 'hardware').map((source, i) => (
+                            <a key={i} href={source.url} target="_blank" rel="noopener noreferrer"
+                              className="block p-2 rounded-lg border hover:shadow-md transition-shadow"
+                              style={{ borderColor: F5_COLORS.secondary.green + '40', backgroundColor: F5_COLORS.secondary.green + '08' }}>
+                              <div className="font-semibold text-xs" style={{ color: F5_COLORS.secondary.green }}>{source.name} ↗</div>
+                              <div className="text-xs text-gray-600 mt-0.5">{source.desc}</div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Research & Sizing Sources */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.blue }}>📚 Research & Sizing Guides</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {SOURCES.filter(s => s.category === 'research' || s.category === 'sizing').map((source, i) => (
+                            <a key={i} href={source.url} target="_blank" rel="noopener noreferrer"
+                              className="block p-2 rounded-lg border hover:shadow-md transition-shadow"
+                              style={{ borderColor: F5_COLORS.primary.blue + '40', backgroundColor: F5_COLORS.primary.blue + '08' }}>
+                              <div className="font-semibold text-xs" style={{ color: F5_COLORS.primary.blue }}>{source.name} ↗</div>
+                              <div className="text-xs text-gray-600 mt-0.5">{source.desc}</div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="mt-4 p-3 rounded-lg text-sm" style={{ backgroundColor: `${F5_COLORS.primary.lightBlue}10` }}>
+                        <div className="font-semibold mb-1" style={{ color: F5_COLORS.primary.blue }}>📊 Live Benchmark Data</div>
+                        <div className="text-gray-600">
+                          GPU throughput and cost data sourced from <a href={INFERENCEMAX_DATA.dashboardUrl} target="_blank" rel="noopener noreferrer" className="underline" style={{ color: F5_COLORS.primary.lightBlue }}>InferenceMax by SemiAnalysis</a> -
+                          updated nightly with real-world inference benchmarks across NVIDIA and AMD GPUs.
+                        </div>
+                      </div>
+
+                      {/* Assumptions Documentation */}
+                      <div className="mt-4 p-3 rounded-lg text-sm border" style={{ borderColor: F5_COLORS.primary.orange, backgroundColor: F5_COLORS.primary.orange + '08' }}>
+                        <div className="font-semibold mb-2" style={{ color: F5_COLORS.primary.orange }}>📋 User & Concurrency Assumptions</div>
+                        <div className="text-xs text-gray-700 space-y-1">
+                          <div><strong>Startup/SMB/Enterprise:</strong> VMware Sizing Guide baseline (10-30% concurrency)</div>
+                          <div><strong>Neo Cloud:</strong> NVIDIA AI Enterprise typical deployment - 12% concurrency based on NIM microservices batching efficiency</div>
+                          <div><strong>Sovereign AI:</strong> Nation-scale deployments serving government/enterprise users - 10% concurrency (lower due to batch processing, secure workloads)</div>
+                          <div><strong>AI Factory (DGX SuperPOD):</strong> 32-2000+ DGX nodes, 8% concurrency (research/training heavy, inference as secondary)</div>
+                          <div><strong>Hyperscaler:</strong> AWS/Azure/GCP scale - 5% concurrency (massive user base, global distribution reduces peak)</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* DPU Scoring Methodology Section */}
+                <div className="rounded-lg shadow-md mb-4 overflow-hidden" style={{ backgroundColor: F5_COLORS.neutral.white }}>
+                  <button onClick={() => setShowDpuMethodology(!showDpuMethodology)}
+                    className="w-full px-4 py-3 flex items-center justify-between text-white"
+                    style={{ backgroundColor: F5_COLORS.primary.blue }}>
+                    <span className="font-semibold">🧮 DPU Value Scoring Methodology</span>
+                    <span>{showDpuMethodology ? '▲' : '▼'}</span>
+                  </button>
+                  {showDpuMethodology && (
+                    <div className="p-4">
+                      {/* Current Score Breakdown */}
+                      <div className="mb-4 p-3 rounded-lg border-2" style={{ borderColor: F5_COLORS.primary.red, backgroundColor: F5_COLORS.primary.red + '08' }}>
+                        <div className="font-semibold mb-2" style={{ color: F5_COLORS.primary.red }}>📊 Your Current DPU Score: {results.dpuScore}</div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                          <div className="text-center p-2 rounded" style={{ backgroundColor: F5_COLORS.primary.blue + '15' }}>
+                            <div className="text-xs text-gray-500">Scale Score</div>
+                            <div className="font-bold text-lg" style={{ color: F5_COLORS.primary.blue }}>
+                              {results.scaleLevel === 'A' ? 0 : results.scaleLevel === 'B' ? 1 : results.scaleLevel === 'C' ? 3 : results.scaleLevel === 'D' ? 5 : 7}
+                            </div>
+                            <div className="text-xs">({results.totalGpus} GPUs = {results.scaleLevel})</div>
+                          </div>
+                          <div className="text-center p-2 rounded" style={{ backgroundColor: F5_COLORS.primary.orange + '15' }}>
+                            <div className="text-xs text-gray-500">HA Score</div>
+                            <div className="font-bold text-lg" style={{ color: F5_COLORS.primary.orange }}>
+                              {haStrategy === 'none' ? 0 : haStrategy === 'cold' ? 0 : haStrategy === 'warm' ? 1 : haStrategy === 'activePassive' ? 2 : 3}
+                            </div>
+                            <div className="text-xs">({HA_STRATEGIES[haStrategy].name.split(' ')[0]})</div>
+                          </div>
+                          <div className="text-center p-2 rounded" style={{ backgroundColor: F5_COLORS.secondary.green + '15' }}>
+                            <div className="text-xs text-gray-500">Region Score</div>
+                            <div className="font-bold text-lg" style={{ color: F5_COLORS.secondary.green }}>
+                              {(regions - 1) * 2}
+                            </div>
+                            <div className="text-xs">({regions} region{regions > 1 ? 's' : ''})</div>
+                          </div>
+                          <div className="text-center p-2 rounded" style={{ backgroundColor: F5_COLORS.primary.lightBlue + '15' }}>
+                            <div className="text-xs text-gray-500">Context Bonus</div>
+                            <div className="font-bold text-lg" style={{ color: F5_COLORS.primary.lightBlue }}>
+                              {results.contextLevel > 2 ? 1 : 0}
+                            </div>
+                            <div className="text-xs">(avg {(PROFILES[profile].avgContext/1000).toFixed(0)}K tok)</div>
+                          </div>
+                        </div>
+                        <div className="mt-2 text-center font-mono text-sm">
+                          = <strong style={{ color: F5_COLORS.primary.red }}>{results.dpuValue}</strong>
+                        </div>
+                      </div>
+
+                      {/* Algorithm Explanation */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.blue }}>📐 Scoring Algorithm</div>
+                        <div className="font-mono text-xs p-3 rounded" style={{ backgroundColor: '#1a1a2e', color: '#e0e0e0' }}>
+                          <div className="text-green-400">// DPU Score = Scale + HA + Regions + Context</div>
+                          <div className="mt-2">
+                            <span className="text-yellow-300">dpuScore</span> = <span className="text-cyan-300">scaleScore</span> + <span className="text-orange-300">haScore</span> + <span className="text-green-300">regionScore</span> + <span className="text-blue-300">contextBonus</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Scale Score Table */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.blue }}>🖥️ Scale Score (GPU Count)</div>
+                        <table className="w-full text-xs border-collapse">
+                          <thead>
+                            <tr style={{ backgroundColor: F5_COLORS.primary.blue + '20' }}>
+                              <th className="p-2 text-left border">GPU Count</th>
+                              <th className="p-2 text-left border">Tier</th>
+                              <th className="p-2 text-left border">Score</th>
+                              <th className="p-2 text-left border">Rationale</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className={results.scaleLevel === 'A' ? 'font-bold' : ''} style={{ backgroundColor: results.scaleLevel === 'A' ? F5_COLORS.primary.red + '15' : '' }}>
+                              <td className="p-2 border">1-4 GPUs</td>
+                              <td className="p-2 border">A</td>
+                              <td className="p-2 border">0</td>
+                              <td className="p-2 border">Single node, minimal network overhead</td>
+                            </tr>
+                            <tr className={results.scaleLevel === 'B' ? 'font-bold' : ''} style={{ backgroundColor: results.scaleLevel === 'B' ? F5_COLORS.primary.red + '15' : '' }}>
+                              <td className="p-2 border">5-16 GPUs</td>
+                              <td className="p-2 border">B</td>
+                              <td className="p-2 border">1</td>
+                              <td className="p-2 border">Small cluster, basic load balancing</td>
+                            </tr>
+                            <tr className={results.scaleLevel === 'C' ? 'font-bold' : ''} style={{ backgroundColor: results.scaleLevel === 'C' ? F5_COLORS.primary.red + '15' : '' }}>
+                              <td className="p-2 border">17-64 GPUs</td>
+                              <td className="p-2 border">C</td>
+                              <td className="p-2 border">3</td>
+                              <td className="p-2 border">Multi-node, significant traffic routing</td>
+                            </tr>
+                            <tr className={results.scaleLevel === 'D' ? 'font-bold' : ''} style={{ backgroundColor: results.scaleLevel === 'D' ? F5_COLORS.primary.red + '15' : '' }}>
+                              <td className="p-2 border">65-256 GPUs</td>
+                              <td className="p-2 border">D</td>
+                              <td className="p-2 border">5</td>
+                              <td className="p-2 border">Large cluster, complex orchestration</td>
+                            </tr>
+                            <tr className={results.scaleLevel === 'E' ? 'font-bold' : ''} style={{ backgroundColor: results.scaleLevel === 'E' ? F5_COLORS.primary.red + '15' : '' }}>
+                              <td className="p-2 border">256+ GPUs</td>
+                              <td className="p-2 border">E</td>
+                              <td className="p-2 border">7</td>
+                              <td className="p-2 border">Hyperscale, critical network optimization</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* HA Score Table */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.orange }}>🔄 HA Score (High Availability)</div>
+                        <table className="w-full text-xs border-collapse">
+                          <thead>
+                            <tr style={{ backgroundColor: F5_COLORS.primary.orange + '20' }}>
+                              <th className="p-2 text-left border">Strategy</th>
+                              <th className="p-2 text-left border">Score</th>
+                              <th className="p-2 text-left border">DPU Value Add</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr className={haStrategy === 'none' || haStrategy === 'cold' ? 'font-bold' : ''} style={{ backgroundColor: haStrategy === 'none' || haStrategy === 'cold' ? F5_COLORS.primary.orange + '15' : '' }}>
+                              <td className="p-2 border">None / Cold Standby</td>
+                              <td className="p-2 border">0</td>
+                              <td className="p-2 border">No failover routing needed</td>
+                            </tr>
+                            <tr className={haStrategy === 'warm' ? 'font-bold' : ''} style={{ backgroundColor: haStrategy === 'warm' ? F5_COLORS.primary.orange + '15' : '' }}>
+                              <td className="p-2 border">Warm Standby</td>
+                              <td className="p-2 border">1</td>
+                              <td className="p-2 border">Basic health checks, failover</td>
+                            </tr>
+                            <tr className={haStrategy === 'activePassive' ? 'font-bold' : ''} style={{ backgroundColor: haStrategy === 'activePassive' ? F5_COLORS.primary.orange + '15' : '' }}>
+                              <td className="p-2 border">Active-Passive</td>
+                              <td className="p-2 border">2</td>
+                              <td className="p-2 border">Health monitoring, automatic failover</td>
+                            </tr>
+                            <tr className={haStrategy === 'activeActive' ? 'font-bold' : ''} style={{ backgroundColor: haStrategy === 'activeActive' ? F5_COLORS.primary.orange + '15' : '' }}>
+                              <td className="p-2 border">Active-Active</td>
+                              <td className="p-2 border">3</td>
+                              <td className="p-2 border">Load balancing, session persistence, health</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Region & Context Scores */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.secondary.green }}>🌍 Region Score</div>
+                          <div className="text-xs p-2 rounded" style={{ backgroundColor: F5_COLORS.secondary.green + '10' }}>
+                            <div className="font-mono mb-1">regionScore = (regions - 1) × 2</div>
+                            <div>1 region = 0, 2 regions = 2, 3 regions = 4</div>
+                            <div className="mt-1 text-gray-600">Multi-region adds geo-routing, latency optimization, cross-region failover</div>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.lightBlue }}>📝 Context Bonus</div>
+                          <div className="text-xs p-2 rounded" style={{ backgroundColor: F5_COLORS.primary.lightBlue + '10' }}>
+                            <div className="font-mono mb-1">contextBonus = avgContext {'>'} 16K ? 1 : 0</div>
+                            <div>Long contexts (Code, Document, Agentic) = +1</div>
+                            <div className="mt-1 text-gray-600">Higher context = more KV cache distribution = more network traffic</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* DPU Value Thresholds */}
+                      <div className="mb-4">
+                        <div className="text-sm font-semibold mb-2" style={{ color: F5_COLORS.primary.red }}>🎯 DPU Value Thresholds</div>
+                        <table className="w-full text-xs border-collapse">
+                          <thead>
+                            <tr style={{ backgroundColor: F5_COLORS.primary.red + '20' }}>
+                              <th className="p-2 text-left border">DPU Value</th>
+                              <th className="p-2 text-left border">Score Range</th>
+                              <th className="p-2 text-left border">Alternative Trigger</th>
+                              <th className="p-2 text-left border">F5 BIG-IP Benefit</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr style={{ backgroundColor: results.dpuValue === 'Low' ? '#ddd' : '' }}>
+                              <td className="p-2 border">Low</td>
+                              <td className="p-2 border">0</td>
+                              <td className="p-2 border">{'<'}8 GPUs, no HA</td>
+                              <td className="p-2 border">Basic monitoring only</td>
+                            </tr>
+                            <tr style={{ backgroundColor: results.dpuValue === 'Moderate' ? F5_COLORS.primary.lightBlue + '20' : '' }}>
+                              <td className="p-2 border" style={{ color: F5_COLORS.primary.lightBlue }}>Moderate</td>
+                              <td className="p-2 border">1-2</td>
+                              <td className="p-2 border">8+ GPUs</td>
+                              <td className="p-2 border">Health checks, basic LB</td>
+                            </tr>
+                            <tr style={{ backgroundColor: results.dpuValue === 'High' ? F5_COLORS.secondary.green + '20' : '' }}>
+                              <td className="p-2 border" style={{ color: F5_COLORS.secondary.green }}>High</td>
+                              <td className="p-2 border">3-4</td>
+                              <td className="p-2 border">16+ GPUs</td>
+                              <td className="p-2 border">Advanced LB, connection pooling</td>
+                            </tr>
+                            <tr style={{ backgroundColor: results.dpuValue === 'Very High' ? F5_COLORS.secondary.yellow + '40' : '' }}>
+                              <td className="p-2 border" style={{ color: '#B8860B' }}>Very High</td>
+                              <td className="p-2 border">5-6</td>
+                              <td className="p-2 border">Active-Active + 8+ GPUs</td>
+                              <td className="p-2 border">Session persistence, SSL offload</td>
+                            </tr>
+                            <tr style={{ backgroundColor: results.dpuValue === 'Critical' ? F5_COLORS.primary.orange + '20' : '' }}>
+                              <td className="p-2 border" style={{ color: F5_COLORS.primary.orange }}>Critical</td>
+                              <td className="p-2 border">7-9</td>
+                              <td className="p-2 border">2+ regions + 16+ GPUs</td>
+                              <td className="p-2 border">Geo-routing, GSLB, failover</td>
+                            </tr>
+                            <tr style={{ backgroundColor: results.dpuValue === 'Essential' ? F5_COLORS.primary.red + '20' : '' }}>
+                              <td className="p-2 border font-bold" style={{ color: F5_COLORS.primary.red }}>Essential</td>
+                              <td className="p-2 border">10+</td>
+                              <td className="p-2 border">3+ regions + 32+ GPUs</td>
+                              <td className="p-2 border">Full DPU offload, line-rate processing</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {/* Why DPU Matters */}
+                      <div className="p-3 rounded-lg" style={{ backgroundColor: F5_COLORS.primary.blue + '10' }}>
+                        <div className="font-semibold mb-1 text-sm" style={{ color: F5_COLORS.primary.blue }}>💡 Why DPU Value Increases with Scale</div>
+                        <div className="text-xs text-gray-700 space-y-1">
+                          <div><strong>Network Bottleneck:</strong> Distributed inference requires KV cache synchronization across GPUs - more GPUs = more network traffic</div>
+                          <div><strong>HA Complexity:</strong> Active-Active requires real-time health monitoring, session persistence, and intelligent load distribution</div>
+                          <div><strong>Multi-Region:</strong> Global deployments need geo-aware routing, latency optimization, and cross-region failover</div>
+                          <div><strong>DPU Offload:</strong> F5 BIG-IP Next on DPU handles SSL/TLS, compression, and L4-L7 processing at line rate, freeing GPU cycles for inference</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer */}
+                <div className="mt-6 text-center text-sm" style={{ color: F5_COLORS.neutral.mediumGray }}>
+                  <div className="flex items-center justify-center gap-2">
+                    <span style={{ color: F5_COLORS.primary.red, fontWeight: 'bold', fontSize: '18px' }}>F5</span>
+                    <span>GPU Provisioning Calculator</span>
+                  </div>
+                  <div className="mt-1">Powered by F5 DPU ROI Toolkit | Data: InferenceMax (SemiAnalysis) | All calculations shown with cited sources</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<GPUCalculator />);
+  </script>
+</body>
+</html>
